@@ -7,5 +7,5 @@ IF %ERRORLEVEL% NEQ 0 (
     pythonw -m pip install pyqt5
 )
 
-start "" pythonw basketball_simulator.py
+start "" pythonw main.py
 exit
