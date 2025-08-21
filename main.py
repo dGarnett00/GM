@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QApplication
 import sys
-from ui.main_window import BasketballSimulatorWindow
+from gui.widgets.main_window import BasketballSimulatorWindow
 
 def main():
     app = QApplication(sys.argv)

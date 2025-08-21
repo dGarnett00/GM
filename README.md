@@ -1,16 +1,22 @@
 # Basketball Game Simulator
 
-A modern, extensible desktop app for simulating exhibition basketball games between two teams.
+A modern, modular desktop app (PyQt5) for simulating exhibition basketball games.
 
 ## Structure
-- `main.py`: Entry point
-- `ui/`: User interface components
-- `simulation/`: Game logic and simulation
-- `config/`: Future configuration files
-- `resources/`: Future assets (images, etc.)
+
+- main.py — App entry point
+- gui/ — UI package
+	- widgets/main_window.py — Main window (menu + simulator)
+	- dialogs/ — Placeholders for future dialogs
+- core/ — Domain logic
+	- game.py — Simulation + summary generation
+- simulation/ — Legacy shim forwarding to core/ (safe to remove later)
+- ui/ — Legacy stub pointing to new GUI (safe to remove later)
+- config/, resources/ — Reserved for settings/assets
 
 ## Run
-1. Install requirements: `pip install -r requirements.txt`
-2. Run: `python main.py`
 
-Or use the provided `run_app.bat` for Windows users.
+1. Install requirements: `pip install -r requirements.txt`
+2. Start the app: `python main.py`
+
+Windows: double-click `run_app.bat` to auto-install PyQt5 (if needed) and launch.
