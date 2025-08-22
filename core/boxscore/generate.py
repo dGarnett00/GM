@@ -82,6 +82,10 @@ def generate_boxscore(team1: str, team2: str, score1: int, score2: int) -> str:
         tov = random.randint(0, 6 if is_starter else 4)
         pf = random.randint(0, 5)
 
+        # Split rebounds into offensive/defensive (kept out of per-player columns to avoid width)
+        oreb = random.randint(0, reb)
+        dreb = reb - oreb
+
         team_diff = team_score - opp_score
         pm_bias = 1 if (is_starter and team_diff > 0) else (-1 if (is_starter and team_diff < 0) else 0)
         plus_minus = random.randint(-5, 5) + int(team_diff / 5) + pm_bias
@@ -99,6 +103,8 @@ def generate_boxscore(team1: str, team2: str, score1: int, score2: int) -> str:
             "ft_m": ft_m,
             "ft_a": ft_att,
             "reb": reb,
+            "oreb": oreb,
+            "dreb": dreb,
             "ast": ast,
             "stl": stl,
             "blk": blk,
@@ -115,7 +121,7 @@ def generate_boxscore(team1: str, team2: str, score1: int, score2: int) -> str:
         rows_html = []
         totals = {
             "min": 0, "fgm": 0, "fga": 0, "three_m": 0, "three_a": 0,
-            "ft_m": 0, "ft_a": 0, "reb": 0, "ast": 0, "stl": 0, "blk": 0, "tov": 0, "pf": 0, "pts": 0
+            "ft_m": 0, "ft_a": 0, "reb": 0, "oreb": 0, "dreb": 0, "ast": 0, "stl": 0, "blk": 0, "tov": 0, "pf": 0, "pts": 0
         }
         statlines = []
         for i, p in enumerate(pts_list, 1):
@@ -139,6 +145,8 @@ def generate_boxscore(team1: str, team2: str, score1: int, score2: int) -> str:
             totals["ft_m"] += S["ft_m"]
             totals["ft_a"] += S["ft_a"]
             totals["reb"] += S["reb"]
+            totals["oreb"] += S["oreb"]
+            totals["dreb"] += S["dreb"]
             totals["ast"] += S["ast"]
             totals["stl"] += S["stl"]
             totals["blk"] += S["blk"]
@@ -271,17 +279,85 @@ def generate_boxscore(team1: str, team2: str, score1: int, score2: int) -> str:
         return f"{(m / a * 100):.0f}%" if a > 0 else "-"
 
     def team_shooting_summary(team_name: str, totals: dict) -> str:
+        # Advanced rates
+        efg = (totals['fgm'] + 0.5 * totals['three_m']) / totals['fga'] if totals['fga'] > 0 else 0.0
+        ts = totals['pts'] / (2 * (totals['fga'] + 0.44 * totals['ft_a'])) if (totals['fga'] + 0.44 * totals['ft_a']) > 0 else 0.0
         return (
             f"<div style='margin:4px 0 8px 0;font-size:12px;color:#eebbc3;'>"
             f"<b>{team_name}</b> shooting — "
             f"FG: {totals['fgm']}-{totals['fga']} ({pct(totals['fgm'], totals['fga'])}) • "
             f"3P: {totals['three_m']}-{totals['three_a']} ({pct(totals['three_m'], totals['three_a'])}) • "
-            f"FT: {totals['ft_m']}-{totals['ft_a']} ({pct(totals['ft_m'], totals['ft_a'])})"
+            f"FT: {totals['ft_m']}-{totals['ft_a']} ({pct(totals['ft_m'], totals['ft_a'])}) • "
+            f"eFG%: {efg*100:.0f}% • TS%: {ts*100:.0f}%"
+            f"</div>"
+        )
+
+    def team_comparison(team_a: str, t1: dict, team_b: str, t2: dict) -> str:
+        def row(label, a, b):
+            return (
+                "<tr>"
+                f"<td style='padding:4px'>{label}</td>"
+                f"<td style='text-align:right;padding:4px'>{a}</td>"
+                f"<td style='text-align:right;padding:4px'>{b}</td>"
+                "</tr>"
+            )
+        efg1 = (t1['fgm'] + 0.5 * t1['three_m']) / t1['fga'] if t1['fga'] > 0 else 0.0
+        efg2 = (t2['fgm'] + 0.5 * t2['three_m']) / t2['fga'] if t2['fga'] > 0 else 0.0
+        ts1 = t1['pts'] / (2 * (t1['fga'] + 0.44 * t1['ft_a'])) if (t1['fga'] + 0.44 * t1['ft_a']) > 0 else 0.0
+        ts2 = t2['pts'] / (2 * (t2['fga'] + 0.44 * t2['ft_a'])) if (t2['fga'] + 0.44 * t2['ft_a']) > 0 else 0.0
+        header = (
+            "<thead><tr>"
+            "<th style='text-align:left;border-bottom:1px solid #393d63;padding:4px'>Team Comparison</th>"
+            f"<th style='text-align:right;border-bottom:1px solid #393d63;padding:4px'>{team_a}</th>"
+            f"<th style='text-align:right;border-bottom:1px solid #393d63;padding:4px'>{team_b}</th>"
+            "</tr></thead>"
+        )
+        body = "".join([
+            row("FG", f"{t1['fgm']}-{t1['fga']} ({pct(t1['fgm'], t1['fga'])})", f"{t2['fgm']}-{t2['fga']} ({pct(t2['fgm'], t2['fga'])})"),
+            row("3P", f"{t1['three_m']}-{t1['three_a']} ({pct(t1['three_m'], t1['three_a'])})", f"{t2['three_m']}-{t2['three_a']} ({pct(t2['three_m'], t2['three_a'])})"),
+            row("FT", f"{t1['ft_m']}-{t1['ft_a']} ({pct(t1['ft_m'], t1['ft_a'])})", f"{t2['ft_m']}-{t2['ft_a']} ({pct(t2['ft_m'], t2['ft_a'])})"),
+            row("eFG%", f"{efg1*100:.0f}%", f"{efg2*100:.0f}%"),
+            row("TS%", f"{ts1*100:.0f}%", f"{ts2*100:.0f}%"),
+            row("REB", t1['reb'], t2['reb']),
+            row("OREB", t1['oreb'], t2['oreb']),
+            row("DREB", t1['dreb'], t2['dreb']),
+            row("AST", t1['ast'], t2['ast']),
+            row("STL", t1['stl'], t2['stl']),
+            row("BLK", t1['blk'], t2['blk']),
+            row("TOV", t1['tov'], t2['tov']),
+            row("PF", t1['pf'], t2['pf']),
+        ])
+        return (
+            "<table style='border-collapse:collapse;width:100%;margin-top:8px;'>" +
+            header + f"<tbody>{body}</tbody></table>"
+        )
+
+    def mvp_html(stats_a: list, stats_b: list) -> str:
+        def game_score(s):
+            made = s['fgm']
+            fga = s['fga']
+            ftm = s['ft_m']
+            fta = s['ft_a']
+            return (
+                s['pts'] + s['reb'] + s['ast'] + s['stl'] + s['blk']
+                - (fga - made) - (fta - ftm) - s['tov']
+            )
+        all_stats = (stats_a or []) + (stats_b or [])
+        if not all_stats:
+            return ""
+        mvp = max(all_stats, key=game_score)
+        return (
+            f"<div style='margin:8px 0;padding:6px;background:#2b2f55;color:#fffffe;border-radius:6px;'>"
+            f"<b>Game MVP:</b> {mvp['player']} — "
+            f"{mvp['pts']} PTS, {mvp['reb']} REB, {mvp['ast']} AST, {mvp['stl']} STL, {mvp['blk']} BLK"
             f"</div>"
         )
 
     return (
-        "<h3 style='margin-top:12px;'>Box Score</h3>" + quarters_html +
+        "<h3 style='margin-top:12px;'>Box Score</h3>" +
+        mvp_html(stats1, stats2) +
+        quarters_html +
+        team_comparison(team1, totals1, team2, totals2) +
         f"<h4 style='margin-top:12px;'>{team1}</h4>" + team_shooting_summary(team1, totals1) + team1_table + leaders_html(team1, stats1) +
         f"<h4 style='margin-top:12px;'>{team2}</h4>" + team_shooting_summary(team2, totals2) + team2_table + leaders_html(team2, stats2)
     )
