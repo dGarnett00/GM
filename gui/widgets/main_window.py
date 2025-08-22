@@ -12,7 +12,8 @@ class BasketballSimulatorWindow(QWidget):
 
 	def init_ui(self):
 		self.setWindowTitle('Exhibition Basketball Game Simulator')
-		self.setFixedSize(480, 400)
+		# Start at a friendly size but allow resizing and fullscreen
+		self.resize(480, 400)
 		self.setStyleSheet('background-color: #232946; color: #fffffe;')
 
 		font_title = QFont('Arial', 20, QFont.Bold)
@@ -26,6 +27,15 @@ class BasketballSimulatorWindow(QWidget):
 		exit_action.triggered.connect(self.close)
 		file_menu.addAction(exit_action)
 		self.menu_bar.addMenu(file_menu)
+
+		# View menu
+		view_menu = QMenu('View', self)
+		self.fullscreen_action = QAction('Toggle Full Screen', self)
+		self.fullscreen_action.setCheckable(True)
+		self.fullscreen_action.setShortcut('F11')
+		self.fullscreen_action.triggered.connect(self.toggle_fullscreen)
+		view_menu.addAction(self.fullscreen_action)
+		self.menu_bar.addMenu(view_menu)
 
 		help_menu = QMenu('Help', self)
 		about_action = QAction('About', self)
@@ -70,9 +80,25 @@ class BasketballSimulatorWindow(QWidget):
 		main_layout.addLayout(layout)
 		self.setLayout(main_layout)
 
+	def toggle_fullscreen(self, checked=False):
+		"""Toggle between fullscreen and normal window."""
+		if self.isFullScreen():
+			self.showNormal()
+			self.fullscreen_action.setChecked(False)
+		else:
+			self.showFullScreen()
+			self.fullscreen_action.setChecked(True)
+
 	def show_about(self):
 		from PyQt5.QtWidgets import QMessageBox
 		QMessageBox.information(self, 'About', 'Basketball GM Simulator\nCreated with PyQt5')
+
+	def keyPressEvent(self, event):
+		"""Let ESC exit fullscreen; otherwise default behavior."""
+		if event.key() == Qt.Key_Escape and self.isFullScreen():
+			self.toggle_fullscreen()
+			return
+		super().keyPressEvent(event)
 
 	def simulate_game(self):
 		team1 = self.team1_input.text().strip() or 'Team 1'
