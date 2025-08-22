@@ -1,6 +1,6 @@
 import sys
 from pathlib import Path
-from core.game import simulate_game, generate_summary, generate_boxscore
+from core import simulate_game, generate_summary, generate_boxscore
 
 # Ensure project root is in sys.path when running directly
 ROOT = Path(__file__).resolve().parents[1]
