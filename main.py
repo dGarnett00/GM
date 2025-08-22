@@ -1,10 +1,10 @@
 from PyQt5.QtWidgets import QApplication
 import sys
-from gui.widgets.main_window import BasketballSimulatorWindow
+from gui.widgets.start_menu import MainMenuWindow
 
 def main():
     app = QApplication(sys.argv)
-    window = BasketballSimulatorWindow()
+    window = MainMenuWindow()
     window.show()
     sys.exit(app.exec_())
 
