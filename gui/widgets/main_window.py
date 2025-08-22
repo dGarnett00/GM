@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QFont
 from PyQt5.QtCore import Qt
 from core import simulate_game, generate_summary, generate_boxscore
+from core.teams import load_teams
 
 class BasketballSimulatorWindow(QWidget):
 	def __init__(self):
@@ -37,6 +38,13 @@ class BasketballSimulatorWindow(QWidget):
 		view_menu.addAction(self.fullscreen_action)
 		self.menu_bar.addMenu(view_menu)
 
+		# Teams menu
+		teams_menu = QMenu('Teams', self)
+		reload_action = QAction('Reload Teams', self)
+		reload_action.triggered.connect(self.reload_teams)
+		teams_menu.addAction(reload_action)
+		self.menu_bar.addMenu(teams_menu)
+
 		help_menu = QMenu('Help', self)
 		about_action = QAction('About', self)
 		about_action.triggered.connect(self.show_about)
@@ -59,10 +67,7 @@ class BasketballSimulatorWindow(QWidget):
 			combo.setEditable(True)
 			combo.setFont(font_label)
 			combo.setStyleSheet('padding: 4px; border-radius: 8px; background: #eebbc3; color: #232946;')
-			teams = [
-				"Lakers", "Warriors", "Celtics", "Bulls", "Nets", "Knicks",
-				"Heat", "Spurs", "Mavericks", "Suns", "Bucks", "76ers"
-			]
+			teams = [t.name for t in load_teams()]
 			combo.addItems(teams)
 			# Set placeholder via the line edit
 			combo.lineEdit().setPlaceholderText(placeholder)
@@ -88,6 +93,24 @@ class BasketballSimulatorWindow(QWidget):
 
 		main_layout.addLayout(layout)
 		self.setLayout(main_layout)
+
+	def reload_teams(self):
+		"""Reload team list from core.teams and repopulate dropdowns."""
+		team_names = [t.name for t in load_teams()]
+		def repop(combo: QComboBox):
+			current = combo.currentText()
+			combo.blockSignals(True)
+			combo.clear()
+			combo.addItems(team_names)
+			if current:
+				idx = combo.findText(current)
+				if idx >= 0:
+					combo.setCurrentIndex(idx)
+				else:
+					combo.setCurrentText(current)
+			combo.blockSignals(False)
+		repop(self.team1_combo)
+		repop(self.team2_combo)
 
 	def toggle_fullscreen(self, checked=False):
 		"""Toggle between fullscreen and normal window."""
