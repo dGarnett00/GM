@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "startingSeason": 2025,
+  "players": [
+    {
+      "firstName": "Andrew",
+      "lastName": "Phillips",
+      "tid": 0,
+      "ratings": [
+        {"diq":50,"dnk":50,"drb":50,"endu":50,"fg":50,"ft":50,"hgt":50,"ins":50,"jmp":50,"oiq":50,"pss":50,"reb":50,"spd":50,"stre":50,"tp":50}
+      ]
+    },
+    {
+      "name": "Evan Mobley",
+      "tid": 5,
+      "pos": "FC",
+      "hgt": 83,
+      "weight": 215,
+      "srID": "mobleev01",
+      "born": {"year": 2001, "loc": "San Diego, CA"},
+      "imgURL": "https://ak-static.cms.nba.com/wp-content/uploads/headshots/nba/latest/260x190/1630596.png",
+      "contract": {"amount": 53800, "exp": 2030},
+      "transactions": [{"phase": 0, "season": 2021, "tid": 5, "type": "draft", "pickNum": 3}],
+      "draft": {"round": 1, "pick": 3, "tid": 5, "originalTid": 5, "year": 2021},
+      "college": "USC",
+      "relatives": [{"type": "brother", "pid": 911, "name": "Isaiah Mobley"}],
+      "awards": [
+        {"season": 2022, "type": "All-Rookie Team"},
+        {"season": 2025, "type": "All-Star"},
+        {"season": 2025, "type": "Defensive Player of the Year"},
+        {"season": 2025, "type": "Second Team All-League"},
+        {"season": 2023, "type": "First Team All-Defensive"},
+        {"season": 2025, "type": "First Team All-Defensive"}
+      ],
+      "ratings": [
+        {"season": 2022, "hgt": 67, "stre": 40, "spd": 53, "jmp": 60, "endu": 63, "ins": 72, "dnk": 71, "ft": 45, "fg": 59, "tp": 42, "diq": 57, "oiq": 65, "drb": 47, "pss": 52, "reb": 74},
+        {"season": 2023, "hgt": 67, "stre": 55, "spd": 57, "jmp": 65, "endu": 63, "ins": 72, "dnk": 69, "ft": 45, "fg": 74, "tp": 35, "diq": 54, "oiq": 65, "drb": 47, "pss": 52, "reb": 72},
+        {"season": 2024, "hgt": 67, "stre": 58, "spd": 55, "jmp": 61, "endu": 58, "ins": 68, "dnk": 66, "ft": 39, "fg": 85, "tp": 33, "diq": 51, "oiq": 67, "drb": 47, "pss": 53, "reb": 74},
+        {"season": 2025, "hgt": 67, "stre": 69, "spd": 56, "jmp": 63, "endu": 60, "ins": 64, "dnk": 78, "ft": 46, "fg": 85, "tp": 39, "diq": 53, "oiq": 73, "drb": 47, "pss": 53, "reb": 73}
+      ],
+      "stats": [
+        {"playoffs": false, "yearsWithTeam": 1, "season": 2022, "jerseyNumber": "4", "tid": 5, "gp": 69, "gs": 69, "min": 2331, "fg": 422, "fga": 830, "tp": 23, "tpa": 92, "ft": 167, "fta": 252, "orb": 143, "drb": 427, "ba": 50, "ast": 174, "stl": 56, "blk": 115, "tov": 133, "pf": 147, "pts": 1034, "pm": 94 },
+        {"playoffs": false, "yearsWithTeam": 1, "season": 2023, "jerseyNumber": "4", "tid": 5, "gp": 79, "gs": 79, "min": 2715, "fg": 525, "fga": 947, "tp": 22, "tpa": 102, "ft": 205, "fta": 304, "orb": 187, "drb": 524, "ba": 63, "ast": 224, "stl": 60, "blk": 119, "tov": 146, "pf": 218, "pts": 1277, "pm": 79 },
+        {"playoffs": true,  "season": 2023, "jerseyNumber": "4", "tid": 5, "gp": 5,  "gs": 5,  "min": 188,  "fg": 22,  "fga": 48,  "tp": 0,  "tpa": 1,  "ft": 5,   "fta": 8,   "orb": 15,  "drb": 35,  "ba": 4,  "ast": 10, "stl": 3,  "blk": 6,  "tov": 12, "pf": 13, "pts": 49,  "pm": -4 },
+        {"playoffs": false, "yearsWithTeam": 3, "season": 2024, "jerseyNumber": "4", "tid": 5, "gp": 50, "gs": 50, "min": 1532, "fg": 320, "fga": 552, "tp": 22, "tpa": 59, "ft": 123, "fta": 171, "orb": 111, "drb": 357, "ba": 39, "ast": 160, "stl": 45, "blk": 72, "tov": 90, "pf": 134, "pts": 785, "pm": 33 },
+        {"playoffs": true,  "season": 2024, "jerseyNumber": "4", "tid": 5, "gp": 12, "gs": 12, "min": 422, "fg": 81, "fga": 146, "tp": 5,  "tpa": 18, "ft": 25, "fta": 36, "orb": 30, "drb": 81, "ba": 12, "ast": 28, "stl": 10, "blk": 26, "tov": 22, "pf": 34, "pts": 192, "pm": -32 },
+        {"playoffs": false, "yearsWithTeam": 4, "season": 2025, "jerseyNumber": "4", "tid": 5, "gp": 71, "gs": 71, "min": 2167, "fg": 505, "fga": 906, "tp": 85, "tpa": 230, "ft": 221, "fta": 305, "orb": 164, "drb": 495, "ba": 51, "ast": 226, "stl": 61, "blk": 113, "tov": 145, "pf": 141, "pts": 1316, "pm": 546 },
+        {"playoffs": true,  "season": 2025, "jerseyNumber": "4", "tid": 5, "gp": 8,  "gs": 8,  "min": 257,  "fg": 51,  "fga": 87,  "tp": 14, "tpa": 31, "ft": 21, "fta": 25, "orb": 21, "drb": 44, "ba": 3,  "ast": 13, "stl": 9,  "blk": 8,  "tov": 11, "pf": 10, "pts": 137, "pm": 11 }
+      ],
+      "injury": {"type": "Healthy", "gamesRemaining": 0}
+    }
+  ]
+}

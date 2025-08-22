@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtGui import QFont, QGuiApplication
 from PyQt5.QtCore import Qt
-from core import simulate_game, generate_summary, generate_boxscore
+from core import simulate_game, generate_summary, generate_boxscore, load_players
 from core.teams import load_teams
 from PyQt5.QtPrintSupport import QPrinter, QPrintDialog
 import os
@@ -77,6 +77,17 @@ class BasketballSimulatorWindow(QWidget):
 		reload_action.triggered.connect(self.reload_teams)
 		teams_menu.addAction(reload_action)
 		self.menu_bar.addMenu(teams_menu)
+
+		# Players menu
+		players_menu = QMenu('Players', self)
+		show_roster_action = QAction('Show Selected Team Roster', self)
+		show_roster_action.setShortcut('Ctrl+Shift+R')
+		show_roster_action.triggered.connect(self.show_selected_team_roster)
+		count_players_action = QAction('Count Players', self)
+		count_players_action.triggered.connect(self.count_players)
+		players_menu.addAction(show_roster_action)
+		players_menu.addAction(count_players_action)
+		self.menu_bar.addMenu(players_menu)
 
 		help_menu = QMenu('Help', self)
 		about_action = QAction('About', self)
@@ -233,6 +244,36 @@ class BasketballSimulatorWindow(QWidget):
 	def show_about(self):
 		from PyQt5.QtWidgets import QMessageBox
 		QMessageBox.information(self, 'About', 'Basketball GM Simulator\nCreated with PyQt5')
+
+	def count_players(self):
+		"""Show a simple count of players loaded from the players data file."""
+		players = load_players()
+		QMessageBox.information(self, 'Players', f'Total players loaded: {len(players)}')
+
+	def show_selected_team_roster(self):
+		"""Display a simple roster list for the currently selected team based on team tid."""
+		team_name = self.team1_combo.currentText() or ''
+		if not team_name:
+			QMessageBox.information(self, 'Roster', 'Select a team first.')
+			return
+		# Map display name -> Team (with tid)
+		teams = {t.name: t for t in load_teams()}
+		team = teams.get(team_name)
+		if not team or getattr(team, 'tid', None) is None:
+			QMessageBox.information(self, 'Roster', 'No team ID found for the selected team.')
+			return
+		players = load_players()
+		roster = [p for p in players if getattr(p, 'tid', None) == team.tid]
+		if not roster:
+			QMessageBox.information(self, 'Roster', f'No players found for {team_name}.')
+			return
+		# Build a simple HTML list
+		lines = []
+		for p in roster:
+			pos = f" ({p.pos})" if getattr(p, 'pos', None) else ''
+			lines.append(f"• {p.name}{pos}")
+		html = f"<h3>{team_name} — Roster</h3><div>" + "<br>".join(lines) + "</div>"
+		self.result_box.setHtml(html)
 
 	def keyPressEvent(self, event):
 		"""Let ESC exit fullscreen; otherwise default behavior."""
