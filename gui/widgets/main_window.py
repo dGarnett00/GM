@@ -62,19 +62,17 @@ class BasketballSimulatorWindow(QWidget):
 
 		team_layout = QHBoxLayout()
 
-		def make_team_combo(placeholder: str) -> QComboBox:
+		def make_team_combo() -> QComboBox:
 			combo = QComboBox()
-			combo.setEditable(True)
+			combo.setEditable(False)  # Disallow typing custom names
 			combo.setFont(font_label)
 			combo.setStyleSheet('padding: 4px; border-radius: 8px; background: #eebbc3; color: #232946;')
 			teams = [t.name for t in load_teams()]
 			combo.addItems(teams)
-			# Set placeholder via the line edit
-			combo.lineEdit().setPlaceholderText(placeholder)
 			return combo
 
-		self.team1_combo = make_team_combo('Team 1 Name')
-		self.team2_combo = make_team_combo('Team 2 Name')
+		self.team1_combo = make_team_combo()
+		self.team2_combo = make_team_combo()
 		team_layout.addWidget(self.team1_combo)
 		team_layout.addWidget(self.team2_combo)
 		layout.addLayout(team_layout)
@@ -102,12 +100,11 @@ class BasketballSimulatorWindow(QWidget):
 			combo.blockSignals(True)
 			combo.clear()
 			combo.addItems(team_names)
-			if current:
-				idx = combo.findText(current)
-				if idx >= 0:
-					combo.setCurrentIndex(idx)
-				else:
-					combo.setCurrentText(current)
+			idx = combo.findText(current)
+			if idx >= 0:
+				combo.setCurrentIndex(idx)
+			elif combo.count() > 0:
+				combo.setCurrentIndex(0)
 			combo.blockSignals(False)
 		repop(self.team1_combo)
 		repop(self.team2_combo)
@@ -133,8 +130,13 @@ class BasketballSimulatorWindow(QWidget):
 		super().keyPressEvent(event)
 
 	def simulate_game(self):
-		team1 = (self.team1_combo.currentText() or '').strip() or 'Team 1'
-		team2 = (self.team2_combo.currentText() or '').strip() or 'Team 2'
+		# Ensure we always use a valid selection from the predefined list
+		if self.team1_combo.currentIndex() < 0 and self.team1_combo.count() > 0:
+			self.team1_combo.setCurrentIndex(0)
+		if self.team2_combo.currentIndex() < 0 and self.team2_combo.count() > 0:
+			self.team2_combo.setCurrentIndex(0)
+		team1 = self.team1_combo.currentText()
+		team2 = self.team2_combo.currentText()
 		t1, t2, score1, score2, winner = simulate_game(team1, team2)
 		summary = generate_summary(t1, t2, score1, score2, winner)
 		box = generate_boxscore(t1, t2, score1, score2)
