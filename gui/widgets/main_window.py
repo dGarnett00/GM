@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtGui import QFont
 from PyQt5.QtCore import Qt
-from core.game import simulate_game, generate_summary
+from core.game import simulate_game, generate_summary, generate_boxscore
 
 class BasketballSimulatorWindow(QWidget):
 	def __init__(self):
@@ -79,4 +79,5 @@ class BasketballSimulatorWindow(QWidget):
 		team2 = self.team2_input.text().strip() or 'Team 2'
 		t1, t2, score1, score2, winner = simulate_game(team1, team2)
 		summary = generate_summary(t1, t2, score1, score2, winner)
-		self.result_box.setHtml(summary)
+		box = generate_boxscore(t1, t2, score1, score2)
+		self.result_box.setHtml(summary + "<br>" + box)
