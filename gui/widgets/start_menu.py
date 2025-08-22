@@ -33,7 +33,7 @@ class MainMenuWindow(QWidget):
         subtitle.setAlignment(Qt.AlignCenter)
         layout.addWidget(subtitle)
 
-        start_btn = QPushButton('Start Game')
+        start_btn = QPushButton('Exhibition')
         start_btn.setFont(btn_font)
         start_btn.setStyleSheet('background:#393d63;color:#fffffe;padding:10px;border-radius:8px;')
         start_btn.clicked.connect(self.start_game)
