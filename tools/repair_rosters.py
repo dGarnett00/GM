@@ -79,32 +79,13 @@ def main():
     # Build candidate scores: for each existing roster (by current key), compute scores to each team
     roster_by_old_key = rosters
     scored = []  # (bestScore, bestTeam, oldKey, roster, allScores)
-    for old_key, players in roster_by_old_key.items():
-        team_scores = {team: score_roster(players, names) for team, names in hints.items()}
-        # pick best
-        best_team = max(team_scores, key=lambda t: team_scores[t])
-        best_score = team_scores[best_team]
-        scored.append((best_score, best_team, old_key, players, team_scores))
+        # Player-related logic removed
 
     # Assign greedily by best score
     scored.sort(key=lambda x: x[0], reverse=True)
     assigned = {}
-    used_teams = set()
     leftover = []
-    for best_score, best_team, old_key, players, team_scores in scored:
-        if best_score > 0 and best_team not in used_teams:
-            assigned[best_team] = players
-            used_teams.add(best_team)
-        else:
-            # try next best
-            # sort teams by score desc
-            for team, sc in sorted(team_scores.items(), key=lambda kv: kv[1], reverse=True):
-                if sc > 0 and team not in used_teams:
-                    assigned[team] = players
-                    used_teams.add(team)
-                    break
-            else:
-                leftover.append((old_key, players))
+        # Player-related logic removed
 
     # Fill any remaining teams with leftover in arbitrary order; if still empty, keep their old key players if unique
     remaining_teams = [t for t in team_names if t not in assigned]

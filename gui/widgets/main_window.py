@@ -78,7 +78,7 @@ class BasketballSimulatorWindow(QWidget):
 
 		# Teams menu removed per request
 
-		# Players menu removed per request
+
 
 		help_menu = QMenu('Help', self)
 		about_action = QAction('About', self)
@@ -243,7 +243,7 @@ class BasketballSimulatorWindow(QWidget):
 		from PyQt5.QtWidgets import QMessageBox
 		QMessageBox.information(self, 'About', 'Basketball GM Simulator\nCreated with PyQt5')
 
-	# Removed Players-related features per request
+
 
 	def back_to_main_menu(self):
 		"""Close this window and return to the main menu."""

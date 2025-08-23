@@ -24,16 +24,6 @@ def load_tid_to_name() -> Dict[int, str]:
     return mapping
 
 
-def player_display_name(p: dict) -> str | None:
-    name = p.get("name")
-    if name:
-        return str(name)
-    first = p.get("firstName")
-    last = p.get("lastName")
-    if first or last:
-        parts = [x for x in [first, last] if x]
-        return " ".join(parts)
-    return None
 
 
 def main():
@@ -55,19 +45,6 @@ def main():
     tid_to_name = load_tid_to_name()
     rosters: Dict[str, List[str]] = {v: [] for v in tid_to_name.values()}
 
-    for p in players:
-        if not isinstance(p, dict):
-            continue
-        tid = p.get("tid")
-        if not isinstance(tid, int) or tid not in tid_to_name:
-            continue
-        pname = player_display_name(p)
-        if not pname:
-            continue
-        team_name = tid_to_name[tid]
-        lst = rosters.setdefault(team_name, [])
-        if pname not in lst:
-            lst.append(pname)
 
     ROSTERS_PATH.parent.mkdir(parents=True, exist_ok=True)
     with ROSTERS_PATH.open("w", encoding="utf-8") as f:
