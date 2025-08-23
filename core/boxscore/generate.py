@@ -1,6 +1,6 @@
 import random
-
 import traceback
+from PyQt5.QtWidgets import QMessageBox
 
 
 def _random_partition(total: int, parts: int, min_each: int = 0) -> list:
@@ -22,6 +22,16 @@ def _quarter_breakdown(total: int, quarters: int = 4, min_each: int = 10) -> lis
     parts = _random_partition(extra, quarters, 0)
     random.shuffle(parts)
     return [feasible_min + p for p in parts]
+
+
+def show_error_popup(title, message, details=None):
+    msg = QMessageBox()
+    msg.setIcon(QMessageBox.Critical)
+    msg.setWindowTitle(title)
+    msg.setText(message)
+    if details:
+        msg.setDetailedText(details)
+    msg.exec_()
 
 
 def generate_boxscore(team1: str, team2: str, score1: int, score2: int) -> str:
@@ -57,11 +67,16 @@ def generate_boxscore(team1: str, team2: str, score1: int, score2: int) -> str:
         n2 = len(roster2) if roster2 else 10
         p_pts1 = _points_distribution_dynamic(score1, n1)
         p_pts2 = _points_distribution_dynamic(score2, n2)
-        # ...existing code...
     except Exception as e:
+        tb_str = traceback.format_exc()
         print(f"[ERROR] generate_boxscore failed for teams '{team1}' vs '{team2}': {e}")
-        traceback.print_exc()
-    return "<div style='color:red'>Boxscore unavailable due to error.</div>"
+        print(tb_str)
+        show_error_popup(
+            "Boxscore Generation Error",
+            f"Boxscore unavailable due to error: {e}",
+            tb_str
+        )
+        return "<div style='color:red'>Boxscore unavailable due to error.</div>"
 
     def decompose_points(points: int):
         max3 = points // 3

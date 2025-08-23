@@ -1,7 +1,6 @@
 import random
 import sys
 import traceback
-import traceback
 
 
 # Lightweight team ratings to influence results. Values are illustrative.
