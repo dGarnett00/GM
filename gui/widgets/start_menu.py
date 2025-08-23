@@ -49,11 +49,11 @@ class MainMenuWindow(QWidget):
         rosters_btn.clicked.connect(self.open_rosters)
         layout.addWidget(rosters_btn)
 
-    reload_btn = QPushButton('Reload')
-    reload_btn.setFont(btn_font)
-    reload_btn.setStyleSheet('background:#393d63;color:#fffffe;padding:10px;border-radius:8px;')
-    reload_btn.clicked.connect(self.reload_app)
-    layout.addWidget(reload_btn)
+        reload_btn = QPushButton('Reload')
+        reload_btn.setFont(btn_font)
+        reload_btn.setStyleSheet('background:#393d63;color:#fffffe;padding:10px;border-radius:8px;')
+        reload_btn.clicked.connect(self.reload_app)
+        layout.addWidget(reload_btn)
 
         exit_btn = QPushButton('Exit')
         exit_btn.setFont(btn_font)
