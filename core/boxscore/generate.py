@@ -42,31 +42,70 @@ def generate_boxscore(team1: str, team2: str, score1: int, score2: int) -> str:
         except Exception:
             get_team_roster = None
 
+        # Load player bios
+        try:
+            from core.players.bio_loader import load_player_bios
+            player_bios = load_player_bios()
+        except Exception:
+            player_bios = {}
+
         roster1 = get_team_roster(team1) if get_team_roster else []
         roster2 = get_team_roster(team2) if get_team_roster else []
 
         q1 = _quarter_breakdown(score1)
         q2 = _quarter_breakdown(score2)
 
-        def _points_distribution_dynamic(total_points: int, roster_len: int, starters_share: float = 0.68):
-            # Default to 10 players if roster is empty
+        def get_player_bio(name):
+            # Try exact match, then case-insensitive
+            if name in player_bios:
+                return player_bios[name]
+            for k in player_bios:
+                if k.lower() == name.lower():
+                    return player_bios[k]
+            return None
+
+        def _points_distribution_dynamic(total_points: int, roster_names: list, starters_share: float = 0.68):
+            roster_len = len(roster_names)
             if roster_len <= 0:
                 starters = 5
                 bench = 5
+                names = [None]*10
             else:
                 starters = min(5, roster_len)
                 bench = max(0, roster_len - starters)
+                names = roster_names
             starters_pts_total = int(round(total_points * starters_share))
             bench_pts_total = total_points - starters_pts_total
-            starters_pts = _random_partition(starters_pts_total, starters, 0)
-            bench_pts = _random_partition(bench_pts_total, bench, 0)
+            # Attribute-driven: assign weights based on scoring attributes
+            def get_score_weight(name):
+                bio = get_player_bio(name) if name else None
+                if bio and "shooting" in bio:
+                    s = bio["shooting"]
+                    return 0.5 * s.get("Field Goal", 50) + 0.5 * s.get("Three Point", 50)
+                return 50
+            # Starters
+            starter_names = names[:starters]
+            bench_names = names[starters:starters+bench]
+            starter_weights = [get_score_weight(n) for n in starter_names]
+            bench_weights = [get_score_weight(n) for n in bench_names]
+            def weighted_partition(total, weights):
+                if not weights or sum(weights) == 0:
+                    return _random_partition(total, len(weights) or 1, 0)
+                base = [w / sum(weights) for w in weights]
+                pts = [int(round(total * b)) for b in base]
+                # Adjust for rounding
+                diff = total - sum(pts)
+                for i in range(abs(diff)):
+                    idx = i % len(pts)
+                    pts[idx] += 1 if diff > 0 else -1
+                return pts
+            starters_pts = weighted_partition(starters_pts_total, starter_weights)
+            bench_pts = weighted_partition(bench_pts_total, bench_weights)
             return starters_pts + bench_pts
 
-        # Distribute points across actual roster size; if empty, use 10 synthetic players
-        n1 = len(roster1) if roster1 else 10
-        n2 = len(roster2) if roster2 else 10
-        p_pts1 = _points_distribution_dynamic(score1, n1)
-        p_pts2 = _points_distribution_dynamic(score2, n2)
+    # n1 and n2 removed (unused)
+        p_pts1 = _points_distribution_dynamic(score1, roster1)
+        p_pts2 = _points_distribution_dynamic(score2, roster2)
     except Exception as e:
         tb_str = traceback.format_exc()
         print(f"[ERROR] generate_boxscore failed for teams '{team1}' vs '{team2}': {e}")
@@ -108,33 +147,52 @@ def generate_boxscore(team1: str, team2: str, score1: int, score2: int) -> str:
 
     def build_player_statline(player_name: str, pts: int, is_starter: bool, team_score: int, opp_score: int):
         try:
+            bio = get_player_bio(player_name)
+            # Attribute-driven stat generation
+            shooting = bio.get("shooting", {}) if bio else {}
+            skill = bio.get("skill", {}) if bio else {}
+            physical = bio.get("physical", {}) if bio else {}
+            # Use attributes to bias stat generation
+            fg_pct_base = shooting.get("Field Goal", 50) / 100
+            three_pct_base = shooting.get("Three Point", 50) / 100
+            ft_pct_base = shooting.get("Free Throw", 60) / 100
+            reb_base = skill.get("Rebound", 50)
+            ast_base = skill.get("Pass", 50)
+            stl_base = skill.get("Defense IQ", 50)
+            blk_base = physical.get("Jump", 50) * 0.1 + skill.get("Defense IQ", 50) * 0.1
+            tov_base = 6 - (skill.get("Dribble", 50) + skill.get("Offense IQ", 50)) / 40
+            pf_base = 3 + (50 - skill.get("Defense IQ", 50)) / 25
+            min_base = 32 if is_starter else 16
+            min_var = physical.get("Endurance", 50) // 10
+            # Decompose points
             three_m, two_m, ft_m = decompose_points(pts)
-            two_att, _ = attempts_from_made(two_m, 0.38, 0.62)
-            three_att, _ = attempts_from_made(three_m, 0.28, 0.42)
-            ft_att, _ = attempts_from_made(ft_m, 0.68, 0.92)
-
+            # Attempts: bias by shooting ability
+            two_att = max(two_m, int(round(two_m / max(0.05, fg_pct_base - 0.08 + random.uniform(-0.04, 0.04)))))
+            three_att = max(three_m, int(round(three_m / max(0.05, three_pct_base - 0.08 + random.uniform(-0.04, 0.04)))))
+            ft_att = max(ft_m, int(round(ft_m / max(0.05, ft_pct_base - 0.05 + random.uniform(-0.03, 0.03)))))
             fgm = two_m + three_m
             fga = two_att + three_att
-            reb = random.randint(0, 15)
-            ast = random.randint(0, 12)
-            minutes = random.randint(28, 36) if is_starter else random.randint(8, 22)
-
-            stl = random.randint(0, 4 if is_starter else 3)
-            blk = random.randint(0, 3 if is_starter else 2)
-            tov = random.randint(0, 6 if is_starter else 4)
-            pf = random.randint(0, 5)
-
-            # Split rebounds into offensive/defensive (kept out of per-player columns to avoid width)
+            reb = int(random.gauss(reb_base / 5, 1.5))
+            reb = max(0, min(20, reb))
+            ast = int(random.gauss(ast_base / 6, 1.2))
+            ast = max(0, min(15, ast))
+            minutes = int(random.gauss(min_base, min_var))
+            minutes = max(6, min(40, minutes))
+            stl = int(random.gauss(stl_base / 15, 0.7))
+            stl = max(0, min(6, stl))
+            blk = int(random.gauss(blk_base / 5, 0.7))
+            blk = max(0, min(5, blk))
+            tov = int(random.gauss(tov_base, 1.2))
+            tov = max(0, min(8, tov))
+            pf = int(random.gauss(pf_base, 1.0))
+            pf = max(0, min(6, pf))
             oreb = random.randint(0, reb)
             dreb = reb - oreb
-
             team_diff = team_score - opp_score
             pm_bias = 1 if (is_starter and team_diff > 0) else (-1 if (is_starter and team_diff < 0) else 0)
             plus_minus = random.randint(-5, 5) + int(team_diff / 5) + pm_bias
-
             def pct_str(m, a):
                 return f"{(m / a * 100):.0f}%" if a > 0 else "-"
-
             return {
                 "player": player_name,
                 "min": minutes,

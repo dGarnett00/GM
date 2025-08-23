@@ -1,6 +1,11 @@
+
 import random
 import sys
 import traceback
+import os
+import json
+from pathlib import Path
+from core.teams.rosters import load_rosters, get_team_roster
 
 
 # Lightweight team ratings to influence results. Values are illustrative.
@@ -31,6 +36,56 @@ _TEAM_RATINGS = {
 
 
 def _ratings_for(team: str):
+    # Try to use player attributes to influence team ratings
+    try:
+        rosters = load_rosters()
+        roster = get_team_roster(team, rosters)
+        # Load player bios
+        bio_path = Path(__file__).resolve().parent.parent / "players" / "player_bio.json"
+        with open(bio_path, encoding="utf-8") as f:
+            bios = json.load(f)["players"]
+        # Build a dict for fast lookup
+        bio_dict = {p["name"]: p for p in bios if "name" in p}
+        # Gather player attributes for this roster
+        ovr = []
+        off = []
+        deff = []
+        pace = []
+        for name in roster:
+            p = bio_dict.get(name)
+            if not p:
+                continue
+            ovr.append(p.get("overall", 50))
+            # Use Offense IQ, Field Goal, Three Point, Pass for offense
+            shooting = p.get("shooting", {})
+            skill = p.get("skill", {})
+            off.append(
+                0.4 * skill.get("Offense IQ", 50)
+                + 0.2 * shooting.get("Field Goal", 50)
+                + 0.2 * shooting.get("Three Point", 50)
+                + 0.2 * skill.get("Pass", 50)
+            )
+            # Use Defense IQ, Rebound, Strength for defense
+            physical = p.get("physical", {})
+            deff.append(
+                0.5 * skill.get("Defense IQ", 50)
+                + 0.3 * skill.get("Rebound", 50)
+                + 0.2 * physical.get("Strength", 50)
+            )
+            # Use Speed, Endurance for pace
+            pace.append(0.6 * physical.get("Speed", 50) + 0.4 * physical.get("Endurance", 50))
+        if ovr:
+            avg_ovr = sum(ovr) / len(ovr)
+            avg_off = sum(off) / len(off)
+            avg_deff = sum(deff) / len(deff)
+            avg_pace = sum(pace) / len(pace)
+            # Map to NBA-like ranges
+            ortg = 100 + (avg_off - 50) * 0.5 + (avg_ovr - 50) * 0.2
+            drtg = 110 - (avg_deff - 50) * 0.4 - (avg_ovr - 50) * 0.1
+            pace_val = 95 + (avg_pace - 50) * 0.15
+            return {"ortg": ortg, "drtg": drtg, "pace": pace_val}
+    except Exception as e:
+        print(f"[WARN] Could not use player attributes for team '{team}': {e}")
     return _TEAM_RATINGS.get(team, _DEFAULT)
 
 
