@@ -19,7 +19,8 @@ def get_latest_rating(ratings):
 
 def player_to_bio(player):
     import datetime
-    rating = get_latest_rating(player.get("ratings", []))
+    ratings = player.get("ratings", [])
+    rating = get_latest_rating(ratings)
     contract = player.get("contract", {})
     draft = player.get("draft", {})
     born = player.get("born", {})
@@ -107,6 +108,16 @@ def player_to_bio(player):
             "Rebound": rating.get('reb', '?')
         }
 
+    # Compute overall as average of key rating attributes
+    def compute_overall(r):
+        keys = ["stre", "spd", "jmp", "endu", "ins", "dnk", "ft", "fg", "tp", "diq", "oiq", "drb", "pss", "reb"]
+        values = [r.get(k, 0) for k in keys if isinstance(r.get(k, 0), (int, float))]
+        return round(sum(values) / len(values), 1) if values else "?"
+
+    overall = compute_overall(rating) if rating else "?"
+    # Potential as max overall from all ratings
+    potential = max((compute_overall(r) for r in ratings if r), default="?")
+
     return {
         "name": player.get("name", "?"),
         "team": team,
@@ -122,8 +133,8 @@ def player_to_bio(player):
         "experience": experience,
         "contract": f"{amount_str} exp {contract.get('exp', '?')}",
         "summary": summary,
-        "overall": rating.get("ovr", "?"),
-        "potential": rating.get("pot", "?"),
+        "overall": overall,
+        "potential": potential,
         "physical": physical,
         "shooting": shooting,
         "skill": skill
