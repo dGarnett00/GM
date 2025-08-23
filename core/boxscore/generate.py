@@ -1,5 +1,7 @@
 import random
 
+import traceback
+
 
 def _random_partition(total: int, parts: int, min_each: int = 0) -> list:
     if parts <= 0:
@@ -25,35 +27,41 @@ def _quarter_breakdown(total: int, quarters: int = 4, min_each: int = 10) -> lis
 def generate_boxscore(team1: str, team2: str, score1: int, score2: int) -> str:
     # Try to load real rosters by team display name; fall back to synthetic if unavailable
     try:
-        from core.teams import get_team_roster  # lazy import to avoid circular deps in some environments
-    except Exception:  # pragma: no cover - best-effort import
-        get_team_roster = None
+        try:
+            from core.teams import get_team_roster  # lazy import to avoid circular deps in some environments
+        except Exception:
+            get_team_roster = None
 
-    roster1 = get_team_roster(team1) if get_team_roster else []
-    roster2 = get_team_roster(team2) if get_team_roster else []
+        roster1 = get_team_roster(team1) if get_team_roster else []
+        roster2 = get_team_roster(team2) if get_team_roster else []
 
-    q1 = _quarter_breakdown(score1)
-    q2 = _quarter_breakdown(score2)
+        q1 = _quarter_breakdown(score1)
+        q2 = _quarter_breakdown(score2)
 
-    def _points_distribution_dynamic(total_points: int, roster_len: int, starters_share: float = 0.68):
-        # Default to 10 players if roster is empty
-        if roster_len <= 0:
-            starters = 5
-            bench = 5
-        else:
-            starters = min(5, roster_len)
-            bench = max(0, roster_len - starters)
-        starters_pts_total = int(round(total_points * starters_share))
-        bench_pts_total = total_points - starters_pts_total
-        starters_pts = _random_partition(starters_pts_total, starters, 0)
-        bench_pts = _random_partition(bench_pts_total, bench, 0)
-        return starters_pts + bench_pts
+        def _points_distribution_dynamic(total_points: int, roster_len: int, starters_share: float = 0.68):
+            # Default to 10 players if roster is empty
+            if roster_len <= 0:
+                starters = 5
+                bench = 5
+            else:
+                starters = min(5, roster_len)
+                bench = max(0, roster_len - starters)
+            starters_pts_total = int(round(total_points * starters_share))
+            bench_pts_total = total_points - starters_pts_total
+            starters_pts = _random_partition(starters_pts_total, starters, 0)
+            bench_pts = _random_partition(bench_pts_total, bench, 0)
+            return starters_pts + bench_pts
 
-    # Distribute points across actual roster size; if empty, use 10 synthetic players
-    n1 = len(roster1) if roster1 else 10
-    n2 = len(roster2) if roster2 else 10
-    p_pts1 = _points_distribution_dynamic(score1, n1)
-    p_pts2 = _points_distribution_dynamic(score2, n2)
+        # Distribute points across actual roster size; if empty, use 10 synthetic players
+        n1 = len(roster1) if roster1 else 10
+        n2 = len(roster2) if roster2 else 10
+        p_pts1 = _points_distribution_dynamic(score1, n1)
+        p_pts2 = _points_distribution_dynamic(score2, n2)
+        # ...existing code...
+    except Exception as e:
+        print(f"[ERROR] generate_boxscore failed for teams '{team1}' vs '{team2}': {e}")
+        traceback.print_exc()
+    return "<div style='color:red'>Boxscore unavailable due to error.</div>"
 
     def decompose_points(points: int):
         max3 = points // 3
@@ -84,58 +92,85 @@ def generate_boxscore(team1: str, team2: str, score1: int, score2: int) -> str:
         return att, pct
 
     def build_player_statline(player_name: str, pts: int, is_starter: bool, team_score: int, opp_score: int):
-        three_m, two_m, ft_m = decompose_points(pts)
-        two_att, _ = attempts_from_made(two_m, 0.38, 0.62)
-        three_att, _ = attempts_from_made(three_m, 0.28, 0.42)
-        ft_att, _ = attempts_from_made(ft_m, 0.68, 0.92)
+        try:
+            three_m, two_m, ft_m = decompose_points(pts)
+            two_att, _ = attempts_from_made(two_m, 0.38, 0.62)
+            three_att, _ = attempts_from_made(three_m, 0.28, 0.42)
+            ft_att, _ = attempts_from_made(ft_m, 0.68, 0.92)
 
-        fgm = two_m + three_m
-        fga = two_att + three_att
-        reb = random.randint(0, 15)
-        ast = random.randint(0, 12)
-        minutes = random.randint(28, 36) if is_starter else random.randint(8, 22)
+            fgm = two_m + three_m
+            fga = two_att + three_att
+            reb = random.randint(0, 15)
+            ast = random.randint(0, 12)
+            minutes = random.randint(28, 36) if is_starter else random.randint(8, 22)
 
-        stl = random.randint(0, 4 if is_starter else 3)
-        blk = random.randint(0, 3 if is_starter else 2)
-        tov = random.randint(0, 6 if is_starter else 4)
-        pf = random.randint(0, 5)
+            stl = random.randint(0, 4 if is_starter else 3)
+            blk = random.randint(0, 3 if is_starter else 2)
+            tov = random.randint(0, 6 if is_starter else 4)
+            pf = random.randint(0, 5)
 
-        # Split rebounds into offensive/defensive (kept out of per-player columns to avoid width)
-        oreb = random.randint(0, reb)
-        dreb = reb - oreb
+            # Split rebounds into offensive/defensive (kept out of per-player columns to avoid width)
+            oreb = random.randint(0, reb)
+            dreb = reb - oreb
 
-        team_diff = team_score - opp_score
-        pm_bias = 1 if (is_starter and team_diff > 0) else (-1 if (is_starter and team_diff < 0) else 0)
-        plus_minus = random.randint(-5, 5) + int(team_diff / 5) + pm_bias
+            team_diff = team_score - opp_score
+            pm_bias = 1 if (is_starter and team_diff > 0) else (-1 if (is_starter and team_diff < 0) else 0)
+            plus_minus = random.randint(-5, 5) + int(team_diff / 5) + pm_bias
 
-        def pct_str(m, a):
-            return f"{(m / a * 100):.0f}%" if a > 0 else "-"
+            def pct_str(m, a):
+                return f"{(m / a * 100):.0f}%" if a > 0 else "-"
 
-        return {
-            "player": player_name,
-            "min": minutes,
-            "fgm": fgm,
-            "fga": fga,
-            "three_m": three_m,
-            "three_a": three_att,
-            "ft_m": ft_m,
-            "ft_a": ft_att,
-            "reb": reb,
-            "oreb": oreb,
-            "dreb": dreb,
-            "ast": ast,
-            "stl": stl,
-            "blk": blk,
-            "tov": tov,
-            "pf": pf,
-            "+/-": plus_minus,
-            "pts": pts,
-            "fg_pct": pct_str(fgm, fga),
-            "three_pct": pct_str(three_m, three_att),
-            "ft_pct": pct_str(ft_m, ft_att),
-        }
+            return {
+                "player": player_name,
+                "min": minutes,
+                "fgm": fgm,
+                "fga": fga,
+                "three_m": three_m,
+                "three_a": three_att,
+                "ft_m": ft_m,
+                "ft_a": ft_att,
+                "reb": reb,
+                "oreb": oreb,
+                "dreb": dreb,
+                "ast": ast,
+                "stl": stl,
+                "blk": blk,
+                "tov": tov,
+                "pf": pf,
+                "+/-": plus_minus,
+                "pts": pts,
+                "fg_pct": pct_str(fgm, fga),
+                "three_pct": pct_str(three_m, three_att),
+                "ft_pct": pct_str(ft_m, ft_att),
+            }
+        except Exception as e:
+            print(f"[ERROR] build_player_statline failed for player '{player_name}': {e}")
+            traceback.print_exc()
+            return {
+                "player": player_name,
+                "min": 0,
+                "fgm": 0,
+                "fga": 0,
+                "three_m": 0,
+                "three_a": 0,
+                "ft_m": 0,
+                "ft_a": 0,
+                "reb": 0,
+                "oreb": 0,
+                "dreb": 0,
+                "ast": 0,
+                "stl": 0,
+                "blk": 0,
+                "tov": 0,
+                "pf": 0,
+                "+/-": 0,
+                "pts": 0,
+                "fg_pct": '-',
+                "three_pct": '-',
+                "ft_pct": '-',
+            }
 
-    def team_table(team: str, pts_list: list, team_score: int, opp_score: int, roster_names: list[str] | None = None):
+    def team_table(team: str, pts_list: list, team_score: int, opp_score: int, roster_names: list[str] | None = None) -> tuple[str, dict, list]:
         rows_html = []
         totals = {
             "min": 0, "fgm": 0, "fga": 0, "three_m": 0, "three_a": 0,
@@ -144,64 +179,68 @@ def generate_boxscore(team1: str, team2: str, score1: int, score2: int) -> str:
         statlines = []
         total_players = len(pts_list)
         starters_cut = min(5, total_players)
-        for i, p in enumerate(pts_list, 1):
-            is_starter = i <= starters_cut
-            name = None
-            if roster_names and i - 1 < len(roster_names):
-                name = str(roster_names[i - 1])
-            if not name or not name.strip():
-                name = f"{team} Player {i}"
-            S = build_player_statline(name, p, is_starter, team_score, opp_score)
-            statlines.append(S)
-            # Insert grouping headers
-            if i == 1:
+        try:
+            for i, p in enumerate(pts_list, 1):
+                is_starter = i <= starters_cut
+                name = None
+                if roster_names and i - 1 < len(roster_names):
+                    name = str(roster_names[i - 1])
+                if not name or not name.strip():
+                    name = f"{team} Player {i}"
+                S = build_player_statline(name, p, is_starter, team_score, opp_score)
+                statlines.append(S)
+                # Insert grouping headers
+                if i == 1:
+                    rows_html.append(
+                        "<tr><td colspan='16' style='text-align:left;padding:6px 4px;background:#2b2f55;color:#fffffe;'><b>Starters</b></td></tr>"
+                    )
+                if i == starters_cut + 1:
+                    rows_html.append(
+                        "<tr><td colspan='16' style='text-align:left;padding:6px 4px;background:#2b2f55;color:#fffffe;'><b>Bench</b></td></tr>"
+                    )
+                totals["min"] += S["min"]
+                totals["fgm"] += S["fgm"]
+                totals["fga"] += S["fga"]
+                totals["three_m"] += S["three_m"]
+                totals["three_a"] += S["three_a"]
+                totals["ft_m"] += S["ft_m"]
+                totals["ft_a"] += S["ft_a"]
+                totals["reb"] += S["reb"]
+                totals["oreb"] += S["oreb"]
+                totals["dreb"] += S["dreb"]
+                totals["ast"] += S["ast"]
+                totals["stl"] += S["stl"]
+                totals["blk"] += S["blk"]
+                totals["tov"] += S["tov"]
+                totals["pf"] += S["pf"]
+                totals["pts"] += S["pts"]
                 rows_html.append(
-                    "<tr><td colspan='16' style='text-align:left;padding:6px 4px;background:#2b2f55;color:#fffffe;'><b>Starters</b></td></tr>"
+                    "<tr>"
+                    f"<td>{S['player']}</td>"
+                    f"<td style='text-align:right'>{S['min']}</td>"
+                    f"<td style='text-align:right'>{S['fgm']}-{S['fga']}</td>"
+                    f"<td style='text-align:right'>{S['three_m']}-{S['three_a']}</td>"
+                    f"<td style='text-align:right'>{S['ft_m']}-{S['ft_a']}</td>"
+                    f"<td style='text-align:right'>{S['reb']}</td>"
+                    f"<td style='text-align:right'>{S['ast']}</td>"
+                    f"<td style='text-align:right'>{S['stl']}</td>"
+                    f"<td style='text-align:right'>{S['blk']}</td>"
+                    f"<td style='text-align:right'>{S['tov']}</td>"
+                    f"<td style='text-align:right'>{S['pf']}</td>"
+                    f"<td style='text-align:right'>{S['+/-']}</td>"
+                    f"<td style='text-align:right'><b>{S['pts']}</b></td>"
+                    f"<td style='text-align:right'>{S['fg_pct']}</td>"
+                    f"<td style='text-align:right'>{S['three_pct']}</td>"
+                    f"<td style='text-align:right'>{S['ft_pct']}</td>"
+                    "</tr>"
                 )
-            if i == starters_cut + 1:
-                rows_html.append(
-                    "<tr><td colspan='16' style='text-align:left;padding:6px 4px;background:#2b2f55;color:#fffffe;'><b>Bench</b></td></tr>"
-                )
-            totals["min"] += S["min"]
-            totals["fgm"] += S["fgm"]
-            totals["fga"] += S["fga"]
-            totals["three_m"] += S["three_m"]
-            totals["three_a"] += S["three_a"]
-            totals["ft_m"] += S["ft_m"]
-            totals["ft_a"] += S["ft_a"]
-            totals["reb"] += S["reb"]
-            totals["oreb"] += S["oreb"]
-            totals["dreb"] += S["dreb"]
-            totals["ast"] += S["ast"]
-            totals["stl"] += S["stl"]
-            totals["blk"] += S["blk"]
-            totals["tov"] += S["tov"]
-            totals["pf"] += S["pf"]
-            totals["pts"] += S["pts"]
-            rows_html.append(
-                "<tr>"
-                f"<td>{S['player']}</td>"
-                f"<td style='text-align:right'>{S['min']}</td>"
-                f"<td style='text-align:right'>{S['fgm']}-{S['fga']}</td>"
-                f"<td style='text-align:right'>{S['three_m']}-{S['three_a']}</td>"
-                f"<td style='text-align:right'>{S['ft_m']}-{S['ft_a']}</td>"
-                f"<td style='text-align:right'>{S['reb']}</td>"
-                f"<td style='text-align:right'>{S['ast']}</td>"
-                f"<td style='text-align:right'>{S['stl']}</td>"
-                f"<td style='text-align:right'>{S['blk']}</td>"
-                f"<td style='text-align:right'>{S['tov']}</td>"
-                f"<td style='text-align:right'>{S['pf']}</td>"
-                f"<td style='text-align:right'>{S['+/-']}</td>"
-                f"<td style='text-align:right'><b>{S['pts']}</b></td>"
-                f"<td style='text-align:right'>{S['fg_pct']}</td>"
-                f"<td style='text-align:right'>{S['three_pct']}</td>"
-                f"<td style='text-align:right'>{S['ft_pct']}</td>"
-                "</tr>"
-            )
-
+        except Exception as e:
+            print(f"[ERROR] team_table failed for team '{team}': {e}")
+            traceback.print_exc()
+            # Return empty table and statlines on error
+            return '', {k: 0 for k in totals}, []
         def pct_str(m, a):
             return f"{(m / a * 100):.0f}%" if a > 0 else "-"
-
         totals_row = (
             "<tr>"
             "<td><b>Totals</b></td>"
