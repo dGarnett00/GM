@@ -7,17 +7,67 @@ class PlayerBioDialog(QDialog):
     def __init__(self, player_name, parent=None):
         super().__init__(parent)
         self.setWindowTitle(f"Player Bio - {player_name}")
-        self.resize(350, 200)
+        self.resize(400, 600)
         layout = QVBoxLayout()
         font = QFont('Arial', 12)
 
-        # Load player info
         info = self._get_player_info(player_name)
         if info:
-            for k, v in info.items():
-                label = QLabel(f"<b>{k.title()}:</b> {v}")
-                label.setFont(font)
-                layout.addWidget(label)
+            # Header
+            header = QLabel(f"<b>{info.get('name', 'Player')}</b>")
+            header.setFont(QFont('Arial', 16, QFont.Bold))
+            layout.addWidget(header)
+
+            # Position, Team, Number
+            pos_team = f"{info.get('position', '')}, {info.get('team', '')}, #{info.get('number', '')}"
+            layout.addWidget(QLabel(pos_team))
+
+            # Height, Weight, BBRef
+            hw = f"{info.get('height', '')}, {info.get('weight', '')}"
+            if info.get('bbref'):
+                hw += " - BBRef"
+            layout.addWidget(QLabel(hw))
+
+            # Born, Age
+            layout.addWidget(QLabel(f"Born: {info.get('born', '')}"))
+            layout.addWidget(QLabel(f"Age: {info.get('age', '')}"))
+
+            # Draft, College, Experience, Contract
+            layout.addWidget(QLabel(f"Draft: {info.get('draft', '')}"))
+            layout.addWidget(QLabel(f"College: {info.get('college', '')}"))
+            layout.addWidget(QLabel(f"Experience: {info.get('experience', '')}"))
+            layout.addWidget(QLabel(f"Contract: {info.get('contract', '')}"))
+
+            # 3PoV (if present)
+            layout.addWidget(QLabel("<b>3PoV</b>"))
+
+            # Summary Table
+            summary = info.get('summary', {})
+            if summary:
+                summary_header = QLabel("<b>Summary</b>   G     MP    PTS   TRB   AST   FG%   3P%   FT%   TS%   PER   WS")
+                layout.addWidget(summary_header)
+                summary_row = QLabel(f"Career  {summary.get('G','')}   {summary.get('MP','')}   {summary.get('PTS','')}   {summary.get('TRB','')}   {summary.get('AST','')}   {summary.get('FG%','')}   {summary.get('3P%','')}   {summary.get('FT%','')}   {summary.get('TS%','')}   {summary.get('PER','')}   {summary.get('WS','')}")
+                layout.addWidget(summary_row)
+
+            # Overall, Potential
+            layout.addWidget(QLabel(f"Overall: {info.get('overall', '')}"))
+            layout.addWidget(QLabel(f"Potential: {info.get('potential', '')}"))
+
+            # Physical
+            layout.addWidget(QLabel("<b>Physical</b>"))
+            for k, v in (info.get('physical', {}) or {}).items():
+                layout.addWidget(QLabel(f"{k}: {v}"))
+
+            # Shooting
+            layout.addWidget(QLabel("<b>Shooting</b>"))
+            for k, v in (info.get('shooting', {}) or {}).items():
+                layout.addWidget(QLabel(f"{k}: {v}"))
+
+            # Skill
+            layout.addWidget(QLabel("<b>Skill</b>"))
+            for k, v in (info.get('skill', {}) or {}).items():
+                layout.addWidget(QLabel(f"{k}: {v}"))
+
         else:
             label = QLabel("No player info found.")
             label.setFont(font)
