@@ -23,19 +23,37 @@ def _quarter_breakdown(total: int, quarters: int = 4, min_each: int = 10) -> lis
 
 
 def generate_boxscore(team1: str, team2: str, score1: int, score2: int) -> str:
+    # Try to load real rosters by team display name; fall back to synthetic if unavailable
+    try:
+        from core.teams import get_team_roster  # lazy import to avoid circular deps in some environments
+    except Exception:  # pragma: no cover - best-effort import
+        get_team_roster = None
+
+    roster1 = get_team_roster(team1) if get_team_roster else []
+    roster2 = get_team_roster(team2) if get_team_roster else []
+
     q1 = _quarter_breakdown(score1)
     q2 = _quarter_breakdown(score2)
 
-    def _points_distribution(total_points: int, starters: int = 5, bench: int = 5, starters_share: float = 0.68):
+    def _points_distribution_dynamic(total_points: int, roster_len: int, starters_share: float = 0.68):
+        # Default to 10 players if roster is empty
+        if roster_len <= 0:
+            starters = 5
+            bench = 5
+        else:
+            starters = min(5, roster_len)
+            bench = max(0, roster_len - starters)
         starters_pts_total = int(round(total_points * starters_share))
         bench_pts_total = total_points - starters_pts_total
         starters_pts = _random_partition(starters_pts_total, starters, 0)
         bench_pts = _random_partition(bench_pts_total, bench, 0)
         return starters_pts + bench_pts
 
-    # 10 players per team: 5 starters + 5 bench
-    p_pts1 = _points_distribution(score1)
-    p_pts2 = _points_distribution(score2)
+    # Distribute points across actual roster size; if empty, use 10 synthetic players
+    n1 = len(roster1) if roster1 else 10
+    n2 = len(roster2) if roster2 else 10
+    p_pts1 = _points_distribution_dynamic(score1, n1)
+    p_pts2 = _points_distribution_dynamic(score2, n2)
 
     def decompose_points(points: int):
         max3 = points // 3
@@ -65,7 +83,7 @@ def generate_boxscore(team1: str, team2: str, score1: int, score2: int) -> str:
         att = max(made, int(round(made / max(0.05, pct))))
         return att, pct
 
-    def build_player_statline(team: str, idx: int, pts: int, is_starter: bool, team_score: int, opp_score: int):
+    def build_player_statline(player_name: str, pts: int, is_starter: bool, team_score: int, opp_score: int):
         three_m, two_m, ft_m = decompose_points(pts)
         two_att, _ = attempts_from_made(two_m, 0.38, 0.62)
         three_att, _ = attempts_from_made(three_m, 0.28, 0.42)
@@ -94,7 +112,7 @@ def generate_boxscore(team1: str, team2: str, score1: int, score2: int) -> str:
             return f"{(m / a * 100):.0f}%" if a > 0 else "-"
 
         return {
-            "player": f"{team} Player {idx}",
+            "player": player_name,
             "min": minutes,
             "fgm": fgm,
             "fga": fga,
@@ -117,23 +135,30 @@ def generate_boxscore(team1: str, team2: str, score1: int, score2: int) -> str:
             "ft_pct": pct_str(ft_m, ft_att),
         }
 
-    def team_table(team: str, pts_list: list, team_score: int, opp_score: int):
+    def team_table(team: str, pts_list: list, team_score: int, opp_score: int, roster_names: list[str] | None = None):
         rows_html = []
         totals = {
             "min": 0, "fgm": 0, "fga": 0, "three_m": 0, "three_a": 0,
             "ft_m": 0, "ft_a": 0, "reb": 0, "oreb": 0, "dreb": 0, "ast": 0, "stl": 0, "blk": 0, "tov": 0, "pf": 0, "pts": 0
         }
         statlines = []
+        total_players = len(pts_list)
+        starters_cut = min(5, total_players)
         for i, p in enumerate(pts_list, 1):
-            is_starter = i <= 5
-            S = build_player_statline(team, i, p, is_starter, team_score, opp_score)
+            is_starter = i <= starters_cut
+            name = None
+            if roster_names and i - 1 < len(roster_names):
+                name = str(roster_names[i - 1])
+            if not name or not name.strip():
+                name = f"{team} Player {i}"
+            S = build_player_statline(name, p, is_starter, team_score, opp_score)
             statlines.append(S)
             # Insert grouping headers
             if i == 1:
                 rows_html.append(
                     "<tr><td colspan='16' style='text-align:left;padding:6px 4px;background:#2b2f55;color:#fffffe;'><b>Starters</b></td></tr>"
                 )
-            if i == 6:
+            if i == starters_cut + 1:
                 rows_html.append(
                     "<tr><td colspan='16' style='text-align:left;padding:6px 4px;background:#2b2f55;color:#fffffe;'><b>Bench</b></td></tr>"
                 )
@@ -258,8 +283,8 @@ def generate_boxscore(team1: str, team2: str, score1: int, score2: int) -> str:
     </table>
     """
 
-    team1_table, totals1, stats1 = team_table(team1, p_pts1, score1, score2)
-    team2_table, totals2, stats2 = team_table(team2, p_pts2, score2, score1)
+    team1_table, totals1, stats1 = team_table(team1, p_pts1, score1, score2, roster1)
+    team2_table, totals2, stats2 = team_table(team2, p_pts2, score2, score1, roster2)
 
     def leaders_html(team_name: str, stats: list) -> str:
         if not stats:

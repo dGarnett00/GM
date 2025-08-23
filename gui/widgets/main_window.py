@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QFont, QGuiApplication
 from PyQt5.QtCore import Qt
 from core import simulate_game, generate_summary, generate_boxscore, load_players
-from core.teams import load_teams
+from core.teams import load_teams, get_team_roster
 from PyQt5.QtPrintSupport import QPrinter, QPrintDialog
 import os
 import random
@@ -251,27 +251,16 @@ class BasketballSimulatorWindow(QWidget):
 		QMessageBox.information(self, 'Players', f'Total players loaded: {len(players)}')
 
 	def show_selected_team_roster(self):
-		"""Display a simple roster list for the currently selected team based on team tid."""
+		"""Display the roster list for the currently selected team from rosters.json."""
 		team_name = self.team1_combo.currentText() or ''
 		if not team_name:
 			QMessageBox.information(self, 'Roster', 'Select a team first.')
 			return
-		# Map display name -> Team (with tid)
-		teams = {t.name: t for t in load_teams()}
-		team = teams.get(team_name)
-		if not team or getattr(team, 'tid', None) is None:
-			QMessageBox.information(self, 'Roster', 'No team ID found for the selected team.')
-			return
-		players = load_players()
-		roster = [p for p in players if getattr(p, 'tid', None) == team.tid]
+		roster = get_team_roster(team_name)
 		if not roster:
-			QMessageBox.information(self, 'Roster', f'No players found for {team_name}.')
+			QMessageBox.information(self, 'Roster', f'No roster found for {team_name}.')
 			return
-		# Build a simple HTML list
-		lines = []
-		for p in roster:
-			pos = f" ({p.pos})" if getattr(p, 'pos', None) else ''
-			lines.append(f"• {p.name}{pos}")
+		lines = [f"• {name}" for name in roster]
 		html = f"<h3>{team_name} — Roster</h3><div>" + "<br>".join(lines) + "</div>"
 		self.result_box.setHtml(html)
 
