@@ -39,19 +39,24 @@ def _simulate_scores(team1: str, team2: str):
         r1 = _ratings_for(team1)
         r2 = _ratings_for(team2)
 
+        # Home/away advantage: +1.5 ortg for home team (team1)
+        home_adv = 1.5
+        r1_ortg = r1["ortg"] + home_adv
+        r2_ortg = r2["ortg"]
+
         # Possessions derived from pace with some randomness
         pace_avg = (r1["pace"] + r2["pace"]) / 2.0
         poss = max(85, min(110, int(round(random.gauss(pace_avg, 2.8)))))
 
         # Offensive efficiencies adjusted by opposing defense and random variance
         def eff(ortg, opp_drtg):
-            base = (ortg + (112.0 - opp_drtg))  # if opp defense is strong (<112), lower base
+            base = (ortg + (112.0 - opp_drtg))
             noise = random.gauss(0, 3.5)
             clutch = random.uniform(-1.0, 1.0)
             return max(100.0, min(125.0, base + noise + clutch))
 
-        e1 = eff(r1["ortg"], r2["drtg"])  # points per 100 poss
-        e2 = eff(r2["ortg"], r1["drtg"])  # points per 100 poss
+        e1 = eff(r1_ortg, r2["drtg"])
+        e2 = eff(r2_ortg, r1["drtg"])
 
         pts1 = int(round(poss * e1 / 100.0))
         pts2 = int(round(poss * e2 / 100.0))
@@ -87,67 +92,66 @@ def _simulate_scores(team1: str, team2: str):
                 pts1 += 1
             else:
                 pts2 += 1
-        return pts1, pts2
+        return pts1, pts2, ot_count
     except Exception as e:
         print(f"[ERROR] _simulate_scores failed for teams '{team1}' vs '{team2}': {e}")
         traceback.print_exc()
-        return 80, 80  # fallback safe values
+        return 80, 80, 0  # fallback safe values
 
 
 def simulate_game(team1, team2):
     try:
-        score1, score2 = _simulate_scores(team1, team2)
+        score1, score2, ot_count = _simulate_scores(team1, team2)
 
-        # Resolve ties with overtime segments (5 min). Each OT adds 8-15 pts per team on average.
-        ot = 0
+        # Resolve ties with overtime segments (should not occur, but fallback)
+        ot = ot_count
         while score1 == score2:
             ot += 1
             add1 = random.randint(7, 15)
             add2 = random.randint(7, 15)
             score1 += add1
             score2 += add2
-            # Keep clamped to not break tests
-            score1 = min(score1, 120)
-            score2 = min(score2, 120)
-            # If clamping creates equality again at the cap, nudge one side
-            if score1 == score2 == 120:
+            score1 = min(score1, 130)
+            score2 = min(score2, 130)
+            if score1 == score2 == 130:
                 score1 -= 1
 
         winner = team1 if score1 > score2 else team2
-        # Keep return contract unchanged (tests expect plain team name or tie string)
-        return team1, team2, score1, score2, winner
+        # Return OT count for summary/highlight
+        return team1, team2, score1, score2, winner, ot_count
     except Exception as e:
         print(f"[ERROR] simulate_game failed for teams '{team1}' vs '{team2}': {e}")
         traceback.print_exc()
-        return team1, team2, 80, 80, team1  # fallback safe values
+        return team1, team2, 80, 80, team1, 0  # fallback safe values
 
 
-def generate_summary(team1, team2, score1, score2, winner):
+def generate_summary(team1, team2, score1, score2, winner, ot_count=0):
     try:
         is_tie = (winner == "It's a tie!")
+        ot_text = f" ({ot_count}OT)" if ot_count == 1 else (f" ({ot_count}OTs)" if ot_count > 1 else "")
         if is_tie:
             result = (
                 f"<b>{team1}</b> {score1} - {score2} <b>{team2}</b>"
-                "<br><span style='color:#eebbc3;'>It was a thrilling tie game!</span>"
+                f"<br><span style='color:#eebbc3;'>It was a thrilling tie game!{ot_text}</span>"
             )
         else:
             result = (
                 f"<b>{team1}</b> {score1} - {score2} <b>{team2}</b>"
-                f"<br><span style='color:#eebbc3;'>Winner: <b>{winner}</b></span>"
+                f"<br><span style='color:#eebbc3;'>Winner: <b>{winner}</b>{ot_text}</span>"
             )
 
         margin = abs(score1 - score2)
         close_game = margin <= 3
         blowout = margin >= 20
 
-        # Tailor highlight to context (OT/close/blowout)
-        ot_tag = "(OT" in winner  # matches both OT and 2OT+
+        ot_tag = ot_count > 0
         if not is_tie:
             if ot_tag or close_game:
                 highlights = [
                     f"A clutch bucket in the final seconds lifted {winner.split(' (')[0]}.",
                     f"{winner.split(' (')[0]} survived a furious late rally to edge it out.",
                     f"Free throws down the stretch made the difference for {winner.split(' (')[0]}.",
+                    f"{winner.split(' (')[0]} outlasted their opponent in a dramatic overtime.",
                 ]
             elif blowout:
                 highlights = [
