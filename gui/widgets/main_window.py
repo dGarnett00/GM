@@ -12,6 +12,7 @@ import random
 class BasketballSimulatorWindow(QWidget):
 	def __init__(self):
 		super().__init__()
+		self._main_menu = None
 		self.init_ui()
 
 	def init_ui(self):
@@ -50,6 +51,9 @@ class BasketballSimulatorWindow(QWidget):
 		print_action = QAction('Print Results…', self)
 		print_action.setShortcut('Ctrl+P')
 		print_action.triggered.connect(self.print_results)
+		back_action = QAction('Back to Main Menu', self)
+		back_action.setShortcut('Ctrl+M')
+		back_action.triggered.connect(self.back_to_main_menu)
 		exit_action = QAction('Exit', self)
 		exit_action.triggered.connect(self.close)
 
@@ -59,6 +63,7 @@ class BasketballSimulatorWindow(QWidget):
 		for act in (save_action, copy_action, print_action):
 			file_menu.addAction(act)
 		file_menu.addSeparator()
+		file_menu.addAction(back_action)
 		file_menu.addAction(exit_action)
 		self.menu_bar.addMenu(file_menu)
 
@@ -111,6 +116,13 @@ class BasketballSimulatorWindow(QWidget):
 		team_layout.addWidget(self.team1_combo)
 		team_layout.addWidget(self.team2_combo)
 		layout.addLayout(team_layout)
+
+		# Back button under team selectors
+		self.back_btn = QPushButton('Back to Main Menu')
+		self.back_btn.setFont(font_button)
+		self.back_btn.setStyleSheet('background: #393d63; color: #fffffe; padding: 10px; border-radius: 8px;')
+		self.back_btn.clicked.connect(self.back_to_main_menu)
+		layout.addWidget(self.back_btn)
 
 		self.simulate_btn = QPushButton('Simulate Game')
 		self.simulate_btn.setFont(font_button)
@@ -237,6 +249,14 @@ class BasketballSimulatorWindow(QWidget):
 		QMessageBox.information(self, 'About', 'Basketball GM Simulator\nCreated with PyQt5')
 
 	# Removed Players-related features per request
+
+	def back_to_main_menu(self):
+		"""Close this window and return to the main menu."""
+		# Local import to avoid circular dependency
+		from .start_menu import MainMenuWindow
+		self._main_menu = MainMenuWindow()
+		self._main_menu.show()
+		self.close()
 
 	def keyPressEvent(self, event):
 		"""Let ESC exit fullscreen; otherwise default behavior."""
