@@ -3,8 +3,8 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtGui import QFont, QGuiApplication
 from PyQt5.QtCore import Qt
-from core import simulate_game, generate_summary, generate_boxscore, load_players
-from core.teams import load_teams, get_team_roster
+from core import simulate_game, generate_summary, generate_boxscore
+from core.teams import load_teams
 from PyQt5.QtPrintSupport import QPrinter, QPrintDialog
 import os
 import random
@@ -78,16 +78,7 @@ class BasketballSimulatorWindow(QWidget):
 		teams_menu.addAction(reload_action)
 		self.menu_bar.addMenu(teams_menu)
 
-		# Players menu
-		players_menu = QMenu('Players', self)
-		show_roster_action = QAction('Show Selected Team Roster', self)
-		show_roster_action.setShortcut('Ctrl+Shift+R')
-		show_roster_action.triggered.connect(self.show_selected_team_roster)
-		count_players_action = QAction('Count Players', self)
-		count_players_action.triggered.connect(self.count_players)
-		players_menu.addAction(show_roster_action)
-		players_menu.addAction(count_players_action)
-		self.menu_bar.addMenu(players_menu)
+		# Players menu removed per request
 
 		help_menu = QMenu('Help', self)
 		about_action = QAction('About', self)
@@ -245,24 +236,7 @@ class BasketballSimulatorWindow(QWidget):
 		from PyQt5.QtWidgets import QMessageBox
 		QMessageBox.information(self, 'About', 'Basketball GM Simulator\nCreated with PyQt5')
 
-	def count_players(self):
-		"""Show a simple count of players loaded from the players data file."""
-		players = load_players()
-		QMessageBox.information(self, 'Players', f'Total players loaded: {len(players)}')
-
-	def show_selected_team_roster(self):
-		"""Display the roster list for the currently selected team from rosters.json."""
-		team_name = self.team1_combo.currentText() or ''
-		if not team_name:
-			QMessageBox.information(self, 'Roster', 'Select a team first.')
-			return
-		roster = get_team_roster(team_name)
-		if not roster:
-			QMessageBox.information(self, 'Roster', f'No roster found for {team_name}.')
-			return
-		lines = [f"• {name}" for name in roster]
-		html = f"<h3>{team_name} — Roster</h3><div>" + "<br>".join(lines) + "</div>"
-		self.result_box.setHtml(html)
+	# Removed Players-related features per request
 
 	def keyPressEvent(self, event):
 		"""Let ESC exit fullscreen; otherwise default behavior."""
