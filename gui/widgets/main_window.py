@@ -5,6 +5,7 @@ from PyQt5.QtGui import QFont, QGuiApplication
 from PyQt5.QtCore import Qt
 from core import simulate_game, generate_summary, generate_boxscore
 from core.teams import load_teams
+from core.teams.team_overall import load_team_overall
 from PyQt5.QtPrintSupport import QPrinter, QPrintDialog
 import os
 import random
@@ -97,20 +98,46 @@ class BasketballSimulatorWindow(QWidget):
 
 		team_layout = QHBoxLayout()
 
-		def make_team_combo() -> QComboBox:
+
+		def make_team_combo_and_label() -> tuple[QComboBox, QLabel]:
 			combo = QComboBox()
-			combo.setEditable(False)  # Disallow typing custom names
+			combo.setEditable(False)
 			combo.setFont(font_label)
 			combo.setStyleSheet('padding: 4px; border-radius: 8px; background: #eebbc3; color: #232946;')
 			teams = [t.name for t in load_teams()]
 			combo.addItems(teams)
-			return combo
+			label = QLabel()
+			label.setFont(font_label)
+			label.setAlignment(Qt.AlignCenter)
+			label.setStyleSheet('color: #eebbc3; background: transparent;')
+			return combo, label
 
-		self.team1_combo = make_team_combo()
-		self.team2_combo = make_team_combo()
-		team_layout.addWidget(self.team1_combo)
-		team_layout.addWidget(self.team2_combo)
+		self.team1_combo, self.team1_ovr_label = make_team_combo_and_label()
+		self.team2_combo, self.team2_ovr_label = make_team_combo_and_label()
+		team1_layout = QVBoxLayout()
+		team1_layout.addWidget(self.team1_combo)
+		team1_layout.addWidget(self.team1_ovr_label)
+		team2_layout = QVBoxLayout()
+		team2_layout.addWidget(self.team2_combo)
+		team2_layout.addWidget(self.team2_ovr_label)
+		team_layout.addLayout(team1_layout)
+		team_layout.addLayout(team2_layout)
 		layout.addLayout(team_layout)
+
+		def update_team1_ovr():
+			team = self.team1_combo.currentText()
+			ovr = load_team_overall(team)
+			self.team1_ovr_label.setText(f"OVR: {ovr}" if ovr else "")
+
+		def update_team2_ovr():
+			team = self.team2_combo.currentText()
+			ovr = load_team_overall(team)
+			self.team2_ovr_label.setText(f"OVR: {ovr}" if ovr else "")
+
+		self.team1_combo.currentIndexChanged.connect(update_team1_ovr)
+		self.team2_combo.currentIndexChanged.connect(update_team2_ovr)
+		update_team1_ovr()
+		update_team2_ovr()
 
 		# Back button under team selectors
 		self.back_btn = QPushButton('Back to Main Menu')
@@ -214,7 +241,7 @@ class BasketballSimulatorWindow(QWidget):
 			self.result_box.print(printer)
 
 	def reload_teams(self):
-		"""Reload team list from core.teams and repopulate dropdowns."""
+		"""Reload team list from core.teams and repopulate dropdowns and update OVR labels."""
 		team_names = [t.name for t in load_teams()]
 		def repop(combo: QComboBox):
 			current = combo.currentText()
@@ -229,6 +256,15 @@ class BasketballSimulatorWindow(QWidget):
 			combo.blockSignals(False)
 		repop(self.team1_combo)
 		repop(self.team2_combo)
+		# Update OVR labels
+		if hasattr(self, 'team1_ovr_label') and hasattr(self, 'team2_ovr_label'):
+			team1 = self.team1_combo.currentText()
+			team2 = self.team2_combo.currentText()
+			from core.teams.team_overall import load_team_overall
+			ovr1 = load_team_overall(team1)
+			ovr2 = load_team_overall(team2)
+			self.team1_ovr_label.setText(f"OVR: {ovr1}" if ovr1 else "")
+			self.team2_ovr_label.setText(f"OVR: {ovr2}" if ovr2 else "")
 
 	def toggle_fullscreen(self, checked=False):
 		"""Toggle between fullscreen and normal window."""
