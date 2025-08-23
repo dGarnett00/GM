@@ -66,6 +66,27 @@ def _simulate_scores(team1: str, team2: str):
         # Clamp to keep within existing test expectations
         pts1 = max(60, min(120, pts1))
         pts2 = max(60, min(120, pts2))
+
+        # Overtime logic: if tied, simulate up to 3 OTs
+        ot_count = 0
+        while pts1 == pts2 and ot_count < 3:
+            ot_count += 1
+            ot1 = random.randint(7, 15) + int((e1 - 100) / 5)
+            ot2 = random.randint(7, 15) + int((e2 - 100) / 5)
+            # Add fatigue: slightly reduce efficiency each OT
+            ot1 = max(6, ot1 - ot_count)
+            ot2 = max(6, ot2 - ot_count)
+            pts1 += ot1
+            pts2 += ot2
+            # Clamp again
+            pts1 = min(130, pts1)
+            pts2 = min(130, pts2)
+        # If still tied after 3 OTs, nudge one team
+        if pts1 == pts2:
+            if random.random() < 0.5:
+                pts1 += 1
+            else:
+                pts2 += 1
         return pts1, pts2
     except Exception as e:
         print(f"[ERROR] _simulate_scores failed for teams '{team1}' vs '{team2}': {e}")
