@@ -1,9 +1,14 @@
 
 from pathlib import Path
+from typing import Optional
 import json
 
-def load_team_overall(team_name: str, rosters_path: Path = None, player_info_path: Path = None) -> float:
-    """Calculate the average overall for a team."""
+def load_team_overall(team_name: str, rosters_path: Optional[Path] = None, player_info_path: Optional[Path] = None) -> float:
+    """
+    Calculate the team overall (OVR) using a more realistic method:
+    - Use the average of the top 8 player overalls on the roster (simulating a real NBA rotation).
+    - If fewer than 8 players, average all available overalls.
+    """
     if rosters_path is None:
         rosters_path = Path(__file__).resolve().parent / "data" / "rosters" / "rosters.json"
     if player_info_path is None:
@@ -18,4 +23,8 @@ def load_team_overall(team_name: str, rosters_path: Path = None, player_info_pat
     overalls = [o for o in overalls if o is not None]
     if not overalls:
         return 0.0
-    return round(sum(overalls) / len(overalls), 1)
+    # Sort overalls descending and take the top 8 (or all if fewer)
+    overalls.sort(reverse=True)
+    top_n = 8
+    top_overalls = overalls[:top_n]
+    return round(sum(top_overalls) / len(top_overalls), 1)
