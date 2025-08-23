@@ -1,3 +1,65 @@
+def simulate_game_with_events(team1, team2, event_callback=None, user_action_callback=None, user_actions=None):
+    """
+    Simulate a game with play-by-play event feed and user actions.
+    event_callback(event: str): called for each event string.
+    user_action_callback(): called when user input is needed (e.g., timeout, sub, playstyle).
+    user_actions: list of user actions to consume (timeout, substitute, playstyle).
+    """
+    if user_actions is None:
+        user_actions = []
+    events = []
+    def emit(event):
+        events.append(event)
+        if event_callback:
+            event_callback(event)
+    try:
+        emit(f"Q1 Start: {team1} vs {team2}")
+        score1, score2 = 0, 0
+        q_scores = [(0, 0)]
+        for q in range(1, 5):
+            # Simulate quarter
+            q1_pts = random.randint(20, 32)
+            q2_pts = random.randint(20, 32)
+            score1 += q1_pts
+            score2 += q2_pts
+            q_scores.append((score1, score2))
+            emit(f"Q{q} End: {team1} {score1} - {score2} {team2}")
+            # Key moment: allow user action at halftime and Q4 start
+            if q == 2 or q == 4:
+                if user_action_callback:
+                    user_action_callback()
+                if user_actions:
+                    action = user_actions.pop(0)
+                    emit(f"User action: {action}")
+        # Simulate final moments
+        if abs(score1 - score2) <= 3:
+            emit(f"Final minute: Tie game!")
+            if user_action_callback:
+                user_action_callback()
+            if user_actions:
+                action = user_actions.pop(0)
+                emit(f"User action: {action}")
+        # Overtime if tied
+        ot_count = 0
+        while score1 == score2 and ot_count < 3:
+            ot_count += 1
+            ot1 = random.randint(7, 15)
+            ot2 = random.randint(7, 15)
+            score1 += ot1
+            score2 += ot2
+            emit(f"OT{ot_count}: {team1} {score1} - {score2} {team2}")
+        if score1 == score2:
+            if random.random() < 0.5:
+                score1 += 1
+            else:
+                score2 += 1
+        winner = team1 if score1 > score2 else team2
+        emit(f"Final: {team1} {score1} - {score2} {team2}. Winner: {winner}")
+        return team1, team2, score1, score2, winner, ot_count
+    except Exception as e:
+        emit(f"[ERROR] simulate_game_with_events failed: {e}")
+        traceback.print_exc()
+        return team1, team2, 80, 80, team1, 0
 
 import random
 import sys

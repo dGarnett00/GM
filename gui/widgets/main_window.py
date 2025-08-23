@@ -1,9 +1,10 @@
 from PyQt5.QtWidgets import (
-	QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QTextEdit, QMenuBar, QMenu, QAction, QVBoxLayout as QVBL, QComboBox, QFileDialog, QMessageBox
+	QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QTextEdit, QMenuBar, QMenu, QAction, QVBoxLayout as QVBL, QComboBox, QFileDialog, QMessageBox, QListWidget
 )
+from core import simulate_game, generate_summary, generate_boxscore
 from PyQt5.QtGui import QFont, QGuiApplication
 from PyQt5.QtCore import Qt
-from core import simulate_game, generate_summary, generate_boxscore
+from core import generate_summary, generate_boxscore
 from core.teams import load_teams
 from core.teams.team_overall import load_team_overall
 from PyQt5.QtPrintSupport import QPrinter, QPrintDialog
@@ -87,6 +88,7 @@ class BasketballSimulatorWindow(QWidget):
 		help_menu.addAction(about_action)
 		self.menu_bar.addMenu(help_menu)
 
+
 		main_layout = QVBL()
 		main_layout.setMenuBar(self.menu_bar)
 
@@ -97,7 +99,6 @@ class BasketballSimulatorWindow(QWidget):
 		layout.addWidget(title)
 
 		team_layout = QHBoxLayout()
-
 
 		def make_team_combo_and_label() -> tuple[QComboBox, QLabel]:
 			combo = QComboBox()
@@ -123,6 +124,38 @@ class BasketballSimulatorWindow(QWidget):
 		team_layout.addLayout(team1_layout)
 		team_layout.addLayout(team2_layout)
 		layout.addLayout(team_layout)
+
+	# --- Live Event Feed ---
+	event_feed_layout = QHBoxLayout()
+	self.event_feed = QListWidget()
+	self.event_feed.setStyleSheet('background: #181b2a; color: #eebbc3; border-radius: 8px; padding: 6px;')
+	self.event_feed.setMinimumHeight(120)
+	self.event_feed.setMaximumHeight(180)
+	event_feed_layout.addWidget(QLabel('Live Game Feed:'))
+	event_feed_layout.addWidget(self.event_feed)
+	layout.addLayout(event_feed_layout)
+
+	# --- User Choice Buttons ---
+	user_choice_layout = QHBoxLayout()
+	self.timeout_btn = QPushButton('Call Timeout')
+	self.timeout_btn.setFont(font_button)
+	self.timeout_btn.setStyleSheet('background: #eebbc3; color: #232946; padding: 6px; border-radius: 8px;')
+	self.timeout_btn.clicked.connect(self.user_call_timeout)
+	self.timeout_btn.setEnabled(False)
+	user_choice_layout.addWidget(self.timeout_btn)
+	self.sub_btn = QPushButton('Substitute')
+	self.sub_btn.setFont(font_button)
+	self.sub_btn.setStyleSheet('background: #eebbc3; color: #232946; padding: 6px; border-radius: 8px;')
+	self.sub_btn.clicked.connect(self.user_substitute)
+	self.sub_btn.setEnabled(False)
+	user_choice_layout.addWidget(self.sub_btn)
+	self.playstyle_btn = QPushButton('Change Play Style')
+	self.playstyle_btn.setFont(font_button)
+	self.playstyle_btn.setStyleSheet('background: #eebbc3; color: #232946; padding: 6px; border-radius: 8px;')
+	self.playstyle_btn.clicked.connect(self.user_change_playstyle)
+	self.playstyle_btn.setEnabled(False)
+	user_choice_layout.addWidget(self.playstyle_btn)
+	layout.addLayout(user_choice_layout)
 
 		def update_team1_ovr():
 			team = self.team1_combo.currentText()
@@ -304,7 +337,67 @@ class BasketballSimulatorWindow(QWidget):
 			self.team2_combo.setCurrentIndex(0)
 		team1 = self.team1_combo.currentText()
 		team2 = self.team2_combo.currentText()
-		t1, t2, score1, score2, winner, ot_count = simulate_game(team1, team2)
+		# --- Live event feed simulation ---
+		self.event_feed.clear()
+		self.timeout_btn.setEnabled(True)
+		self.sub_btn.setEnabled(True)
+		self.playstyle_btn.setEnabled(True)
+		# Simulate quarters with event feed
+
+		# --- Real event feed and user action integration ---
+		from core.game import sim as sim_module
+		self._user_actions = []
+		self._event_feed_buffer = []
+		def event_callback(event):
+			self._event_feed_buffer.append(event)
+			self.event_feed.addItem(event)
+		def user_action_callback():
+			# Called when simulation pauses for user input
+			self.timeout_btn.setEnabled(True)
+			self.sub_btn.setEnabled(True)
+			self.playstyle_btn.setEnabled(True)
+			# Wait for user to press a button; see user_call_timeout etc.
+		# Simulate game with event feed and user actions
+		t1, t2, score1, score2, winner, ot_count = sim_module.simulate_game_with_events(
+			team1, team2,
+			event_callback=event_callback,
+			user_action_callback=user_action_callback,
+			user_actions=self._user_actions
+		)
 		summary = generate_summary(t1, t2, score1, score2, winner, ot_count)
 		box = generate_boxscore(t1, t2, score1, score2)
 		self.result_box.setHtml(summary + "<br>" + box)
+		self.timeout_btn.setEnabled(False)
+		self.sub_btn.setEnabled(False)
+		self.playstyle_btn.setEnabled(False)
+
+
+	def user_call_timeout(self):
+		self._user_actions.append('timeout')
+		self.event_feed.addItem("User called a timeout!")
+		self.timeout_btn.setEnabled(False)
+		self.sub_btn.setEnabled(False)
+		self.playstyle_btn.setEnabled(False)
+
+	def user_substitute(self):
+		self._user_actions.append('substitute')
+		self.event_feed.addItem("User made a substitution!")
+		self.timeout_btn.setEnabled(False)
+		self.sub_btn.setEnabled(False)
+		self.playstyle_btn.setEnabled(False)
+
+	def user_change_playstyle(self):
+		self._user_actions.append('playstyle')
+		self.event_feed.addItem("User changed play style!")
+		self.timeout_btn.setEnabled(False)
+		self.sub_btn.setEnabled(False)
+		self.playstyle_btn.setEnabled(False)
+
+	def user_call_timeout(self):
+		self.event_feed.addItem("User called a timeout!")
+
+	def user_substitute(self):
+		self.event_feed.addItem("User made a substitution!")
+
+	def user_change_playstyle(self):
+		self.event_feed.addItem("User changed play style!")
