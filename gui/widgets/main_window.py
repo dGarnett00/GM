@@ -1,274 +1,376 @@
 from PyQt5.QtWidgets import (
-	QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QTextEdit, QMenuBar, QMenu, QAction, QVBoxLayout as QVBL, QComboBox, QFileDialog, QMessageBox
+    QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QTextEdit, 
+    QMenuBar, QMenu, QAction, QVBoxLayout as QVBL, QComboBox, QFileDialog, QMessageBox
 )
-from PyQt5.QtGui import QFont, QGuiApplication
+from PyQt5.QtGui import QGuiApplication
 from PyQt5.QtCore import Qt
-from core import simulate_game, generate_summary, generate_boxscore
-from core.teams import load_teams
 from PyQt5.QtPrintSupport import QPrinter, QPrintDialog
 import os
 import random
+import logging
+
+from core import simulate_game, generate_summary, generate_boxscore
+from core.teams import load_teams
+from ..styles import AppStyles, AppFonts, UIConstants
+from ..error_handling import ErrorHandler, safe_execute_method, InputValidator, ValidationError
+
 
 class BasketballSimulatorWindow(QWidget):
-	def __init__(self):
-		super().__init__()
-		self._main_menu = None
-		self.init_ui()
+    def __init__(self):
+        super().__init__()
+        self._main_menu = None
+        self.logger = logging.getLogger('basketball_gm')
+        self.init_ui()
 
-	def init_ui(self):
-		self.setWindowTitle('Exhibition Basketball Game Simulator')
-		# Start at a friendly size but allow resizing and fullscreen
-		self.resize(480, 400)
-		self.setStyleSheet('background-color: #232946; color: #fffffe;')
+    @safe_execute_method("initializing simulator window UI")
+    def init_ui(self):
+        self.setWindowTitle('Exhibition Basketball Game Simulator')
+        self.resize(*UIConstants.SIMULATOR_SIZE)
+        self.setStyleSheet(AppStyles.WINDOW_STYLE)
 
-		font_title = QFont('Arial', 20, QFont.Bold)
-		font_label = QFont('Arial', 12)
-		font_button = QFont('Arial', 12, QFont.Bold)
+        # Menu bar
+        self.menu_bar = QMenuBar(self)
+        self._create_menus()
 
-		# Menu bar
-		self.menu_bar = QMenuBar(self)
+        main_layout = QVBL()
+        main_layout.setMenuBar(self.menu_bar)
 
-		# File menu (Exhibition controls and utilities)
-		file_menu = QMenu('File', self)
-		new_action = QAction('New Exhibition', self)
-		new_action.setShortcut('Ctrl+N')
-		new_action.triggered.connect(self.new_exhibition)
-		random_action = QAction('Randomize Teams', self)
-		random_action.setShortcut('Ctrl+R')
-		random_action.triggered.connect(self.randomize_teams)
-		swap_action = QAction('Swap Teams', self)
-		swap_action.setShortcut('Ctrl+S')
-		swap_action.triggered.connect(self.swap_teams)
-		clear_action = QAction('Clear Results', self)
-		clear_action.setShortcut('Ctrl+L')
-		clear_action.triggered.connect(self.clear_results)
-		save_action = QAction('Save Results as HTML…', self)
-		save_action.setShortcut('Ctrl+Shift+S')
-		save_action.triggered.connect(self.save_results_as_html)
-		copy_action = QAction('Copy Results to Clipboard', self)
-		copy_action.setShortcut('Ctrl+Alt+C')
-		copy_action.triggered.connect(self.copy_results_to_clipboard)
-		print_action = QAction('Print Results…', self)
-		print_action.setShortcut('Ctrl+P')
-		print_action.triggered.connect(self.print_results)
-		back_action = QAction('Back to Main Menu', self)
-		back_action.setShortcut('Ctrl+M')
-		back_action.triggered.connect(self.back_to_main_menu)
-		exit_action = QAction('Exit', self)
-		exit_action.triggered.connect(self.close)
+        layout = QVBoxLayout()
+        
+        # Title
+        title = QLabel('🏀 Basketball Game Simulator')
+        title.setFont(AppFonts.title_font())
+        title.setAlignment(UIConstants.CENTER)
+        layout.addWidget(title)
 
-		for act in (new_action, random_action, swap_action, clear_action):
-			file_menu.addAction(act)
-		file_menu.addSeparator()
-		for act in (save_action, copy_action, print_action):
-			file_menu.addAction(act)
-		file_menu.addSeparator()
-		file_menu.addAction(back_action)
-		file_menu.addAction(exit_action)
-		self.menu_bar.addMenu(file_menu)
+        # Team selection
+        team_layout = QHBoxLayout()
+        self.team1_combo = self._create_team_combo()
+        self.team2_combo = self._create_team_combo()
+        team_layout.addWidget(self.team1_combo)
+        team_layout.addWidget(self.team2_combo)
+        layout.addLayout(team_layout)
 
-		# View menu
-		view_menu = QMenu('View', self)
-		self.fullscreen_action = QAction('Toggle Full Screen', self)
-		self.fullscreen_action.setCheckable(True)
-		self.fullscreen_action.setShortcut('F11')
-		self.fullscreen_action.triggered.connect(self.toggle_fullscreen)
-		view_menu.addAction(self.fullscreen_action)
-		self.menu_bar.addMenu(view_menu)
+        # Back button
+        self.back_btn = QPushButton('Back to Main Menu')
+        self.back_btn.setFont(AppFonts.button_font())
+        self.back_btn.setStyleSheet(AppStyles.BUTTON_PRIMARY)
+        self.back_btn.clicked.connect(self.back_to_main_menu)
+        layout.addWidget(self.back_btn)
 
-		# Teams menu removed per request
+        # Simulate button
+        self.simulate_btn = QPushButton('Simulate Game')
+        self.simulate_btn.setFont(AppFonts.button_font())
+        self.simulate_btn.setStyleSheet(AppStyles.BUTTON_PRIMARY)
+        self.simulate_btn.clicked.connect(self.simulate_game)
+        layout.addWidget(self.simulate_btn)
 
+        # Results area
+        self.result_box = QTextEdit()
+        self.result_box.setReadOnly(True)
+        self.result_box.setFont(AppFonts.label_font())
+        self.result_box.setStyleSheet(AppStyles.TEXT_AREA_STYLE)
+        layout.addWidget(self.result_box)
 
+        main_layout.addLayout(layout)
+        self.setLayout(main_layout)
 
-		help_menu = QMenu('Help', self)
-		about_action = QAction('About', self)
-		about_action.triggered.connect(self.show_about)
-		help_menu.addAction(about_action)
-		self.menu_bar.addMenu(help_menu)
+    @safe_execute_method("creating menus")
+    def _create_menus(self):
+        """Create the application menu bar with error handling."""
+        # File menu
+        file_menu = QMenu('File', self)
+        
+        # Game actions
+        new_action = self._create_action('New Exhibition', 'Ctrl+N', self.new_exhibition)
+        random_action = self._create_action('Randomize Teams', 'Ctrl+R', self.randomize_teams)
+        swap_action = self._create_action('Swap Teams', 'Ctrl+S', self.swap_teams)
+        clear_action = self._create_action('Clear Results', 'Ctrl+L', self.clear_results)
+        
+        # Output actions
+        save_action = self._create_action('Save Results as HTML…', 'Ctrl+Shift+S', self.save_results_as_html)
+        copy_action = self._create_action('Copy Results to Clipboard', 'Ctrl+Alt+C', self.copy_results_to_clipboard)
+        print_action = self._create_action('Print Results…', 'Ctrl+P', self.print_results)
+        
+        # Navigation actions
+        back_action = self._create_action('Back to Main Menu', 'Ctrl+M', self.back_to_main_menu)
+        exit_action = self._create_action('Exit', None, self.close)
 
-		main_layout = QVBL()
-		main_layout.setMenuBar(self.menu_bar)
+        # Add actions to menu
+        for act in (new_action, random_action, swap_action, clear_action):
+            file_menu.addAction(act)
+        file_menu.addSeparator()
+        for act in (save_action, copy_action, print_action):
+            file_menu.addAction(act)
+        file_menu.addSeparator()
+        file_menu.addAction(back_action)
+        file_menu.addAction(exit_action)
+        self.menu_bar.addMenu(file_menu)
 
-		layout = QVBoxLayout()
-		title = QLabel('🏀 Basketball Game Simulator')
-		title.setFont(font_title)
-		title.setAlignment(Qt.AlignCenter)
-		layout.addWidget(title)
+        # View menu
+        view_menu = QMenu('View', self)
+        self.fullscreen_action = self._create_action('Toggle Full Screen', 'F11', self.toggle_fullscreen)
+        self.fullscreen_action.setCheckable(True)
+        view_menu.addAction(self.fullscreen_action)
+        self.menu_bar.addMenu(view_menu)
 
-		team_layout = QHBoxLayout()
+        # Help menu
+        help_menu = QMenu('Help', self)
+        about_action = self._create_action('About', None, self.show_about)
+        help_menu.addAction(about_action)
+        self.menu_bar.addMenu(help_menu)
 
-		def make_team_combo() -> QComboBox:
-			combo = QComboBox()
-			combo.setEditable(False)  # Disallow typing custom names
-			combo.setFont(font_label)
-			combo.setStyleSheet('padding: 4px; border-radius: 8px; background: #eebbc3; color: #232946;')
-			teams = [t.name for t in load_teams()]
-			combo.addItems(teams)
-			return combo
+    def _create_action(self, text: str, shortcut: str, slot) -> QAction:
+        """Helper to create menu actions with error handling."""
+        action = QAction(text, self)
+        if shortcut:
+            action.setShortcut(shortcut)
+        action.triggered.connect(slot)
+        return action
 
-		self.team1_combo = make_team_combo()
-		self.team2_combo = make_team_combo()
-		team_layout.addWidget(self.team1_combo)
-		team_layout.addWidget(self.team2_combo)
-		layout.addLayout(team_layout)
+    @safe_execute_method("creating team combo box")
+    def _create_team_combo(self) -> QComboBox:
+        """Create a team selection combo box with error handling."""
+        combo = QComboBox()
+        combo.setEditable(False)
+        combo.setFont(AppFonts.label_font())
+        combo.setStyleSheet(AppStyles.COMBO_STYLE)
+        
+        try:
+            teams = load_teams()
+            team_names = [t.name for t in teams]
+            if not team_names:
+                team_names = ["No teams available"]
+                self.logger.warning("No teams loaded for game selection")
+            
+            combo.addItems(team_names)
+            
+        except Exception as e:
+            ErrorHandler.handle_exception(self, "loading teams for game selection", e)
+            combo.addItems(["Error loading teams"])
+        
+        return combo
 
-		# Back button under team selectors
-		self.back_btn = QPushButton('Back to Main Menu')
-		self.back_btn.setFont(font_button)
-		self.back_btn.setStyleSheet('background: #393d63; color: #fffffe; padding: 10px; border-radius: 8px;')
-		self.back_btn.clicked.connect(self.back_to_main_menu)
-		layout.addWidget(self.back_btn)
+    @safe_execute_method("starting new exhibition")
+    def new_exhibition(self):
+        """Reset team selections to the first two teams and clear results."""
+        self.reload_teams()
+        if self.team1_combo.count() > 0:
+            self.team1_combo.setCurrentIndex(0)
+        if self.team2_combo.count() > 1:
+            self.team2_combo.setCurrentIndex(1)
+        elif self.team2_combo.count() > 0:
+            self.team2_combo.setCurrentIndex(0)
+        self.clear_results()
+        self.logger.info("Started new exhibition")
 
-		self.simulate_btn = QPushButton('Simulate Game')
-		self.simulate_btn.setFont(font_button)
-		self.simulate_btn.setStyleSheet('background: #393d63; color: #fffffe; padding: 10px; border-radius: 8px;')
-		self.simulate_btn.clicked.connect(self.simulate_game)
-		layout.addWidget(self.simulate_btn)
+    @safe_execute_method("randomizing teams")
+    def randomize_teams(self):
+        """Pick two distinct random teams if available."""
+        cnt = self.team1_combo.count()
+        if cnt == 0:
+            ErrorHandler.show_warning(self, "No Teams", "No teams available for randomization.")
+            return
+        if cnt == 1:
+            self.team1_combo.setCurrentIndex(0)
+            self.team2_combo.setCurrentIndex(0)
+            ErrorHandler.show_info(self, "Single Team", "Only one team available.")
+            return
+        
+        i1, i2 = random.sample(range(cnt), 2)
+        self.team1_combo.setCurrentIndex(i1)
+        self.team2_combo.setCurrentIndex(i2)
+        self.logger.info(f"Randomized teams: {self.team1_combo.currentText()} vs {self.team2_combo.currentText()}")
 
-		self.result_box = QTextEdit()
-		self.result_box.setReadOnly(True)
-		self.result_box.setFont(font_label)
-		self.result_box.setStyleSheet('background: #121629; color: #fffffe; border-radius: 8px; padding: 10px;')
-		layout.addWidget(self.result_box)
+    @safe_execute_method("swapping teams")
+    def swap_teams(self):
+        """Swap the current team selections."""
+        i1 = self.team1_combo.currentIndex()
+        i2 = self.team2_combo.currentIndex()
+        if i1 >= 0 and i2 >= 0:
+            self.team1_combo.setCurrentIndex(i2)
+            self.team2_combo.setCurrentIndex(i1)
+            self.logger.info("Swapped team selections")
 
-		main_layout.addLayout(layout)
-		self.setLayout(main_layout)
+    @safe_execute_method("clearing results")
+    def clear_results(self):
+        """Clear the results pane."""
+        self.result_box.clear()
+        self.logger.info("Cleared results")
 
-	def new_exhibition(self):
-		"""Reset team selections to the first two teams and clear results."""
-		self.reload_teams()
-		if self.team1_combo.count() > 0:
-			self.team1_combo.setCurrentIndex(0)
-		if self.team2_combo.count() > 1:
-			self.team2_combo.setCurrentIndex(1)
-		elif self.team2_combo.count() > 0:
-			self.team2_combo.setCurrentIndex(0)
-		self.clear_results()
+    def _current_matchup_slug(self) -> str:
+        """Build a simple filename slug from current selections."""
+        t1 = (self.team1_combo.currentText() or 'Team1').replace(' ', '_')
+        t2 = (self.team2_combo.currentText() or 'Team2').replace(' ', '_')
+        return f"{t1}_vs_{t2}"
 
-	def randomize_teams(self):
-		"""Pick two distinct random teams if available."""
-		cnt = self.team1_combo.count()
-		if cnt == 0:
-			return
-		if cnt == 1:
-			self.team1_combo.setCurrentIndex(0)
-			self.team2_combo.setCurrentIndex(0)
-			return
-		i1, i2 = random.sample(range(cnt), 2)
-		self.team1_combo.setCurrentIndex(i1)
-		self.team2_combo.setCurrentIndex(i2)
+    @safe_execute_method("saving results as HTML")
+    def save_results_as_html(self):
+        """Save the current results (HTML) to a file."""
+        html = self.result_box.toHtml()
+        if not html.strip():
+            ErrorHandler.show_info(self, 'Save Results', 'No results to save yet.')
+            return
+        
+        default_name = f"boxscore_{self._current_matchup_slug()}.html"
+        start_dir = os.path.expanduser('~')
+        path, _ = QFileDialog.getSaveFileName(
+            self, 'Save Results as HTML', 
+            os.path.join(start_dir, default_name), 
+            'HTML Files (*.html);;All Files (*)'
+        )
+        
+        if not path:
+            return
+        
+        try:
+            with open(path, 'w', encoding='utf-8') as f:
+                f.write(html)
+            ErrorHandler.show_info(self, 'Save Results', f'Saved to:\n{path}')
+            self.logger.info(f"Saved results to {path}")
+        except Exception as e:
+            ErrorHandler.handle_exception(self, "saving results file", e)
 
-	def swap_teams(self):
-		"""Swap the current team selections."""
-		i1 = self.team1_combo.currentIndex()
-		i2 = self.team2_combo.currentIndex()
-		if i1 >= 0 and i2 >= 0:
-			self.team1_combo.setCurrentIndex(i2)
-			self.team2_combo.setCurrentIndex(i1)
+    @safe_execute_method("copying results to clipboard")
+    def copy_results_to_clipboard(self):
+        """Copy the results as plain text to the system clipboard."""
+        text = self.result_box.toPlainText()
+        if not text.strip():
+            ErrorHandler.show_info(self, 'Copy Results', 'No results to copy yet.')
+            return
+        
+        try:
+            QGuiApplication.clipboard().setText(text)
+            ErrorHandler.show_info(self, 'Copy Results', 'Results copied to clipboard.')
+            self.logger.info("Copied results to clipboard")
+        except Exception as e:
+            ErrorHandler.handle_exception(self, "copying to clipboard", e)
 
-	def clear_results(self):
-		"""Clear the results pane."""
-		self.result_box.clear()
+    @safe_execute_method("printing results")
+    def print_results(self):
+        """Open a print dialog to print the results pane."""
+        if not (self.result_box.toPlainText().strip() or self.result_box.toHtml().strip()):
+            ErrorHandler.show_info(self, 'Print Results', 'No results to print yet.')
+            return
+        
+        try:
+            printer = QPrinter(QPrinter.HighResolution)
+            dialog = QPrintDialog(printer, self)
+            if dialog.exec_() == QPrintDialog.Accepted:
+                self.result_box.print(printer)
+                self.logger.info("Printed results")
+        except Exception as e:
+            ErrorHandler.handle_exception(self, "printing results", e)
 
-	def _current_matchup_slug(self) -> str:
-		"""Build a simple filename slug from current selections."""
-		t1 = (self.team1_combo.currentText() or 'Team1').replace(' ', '_')
-		t2 = (self.team2_combo.currentText() or 'Team2').replace(' ', '_')
-		return f"{t1}_vs_{t2}"
+    @safe_execute_method("reloading teams")
+    def reload_teams(self):
+        """Reload team list from core.teams and repopulate dropdowns."""
+        try:
+            teams = load_teams()
+            team_names = [t.name for t in teams]
+            
+            if not team_names:
+                team_names = ["No teams available"]
+                ErrorHandler.show_warning(self, "Teams", "No teams could be loaded.")
+            
+            def repop(combo: QComboBox):
+                current = combo.currentText()
+                combo.blockSignals(True)
+                combo.clear()
+                combo.addItems(team_names)
+                idx = combo.findText(current)
+                if idx >= 0:
+                    combo.setCurrentIndex(idx)
+                elif combo.count() > 0:
+                    combo.setCurrentIndex(0)
+                combo.blockSignals(False)
+            
+            repop(self.team1_combo)
+            repop(self.team2_combo)
+            self.logger.info(f"Reloaded {len(team_names)} teams")
+            
+        except Exception as e:
+            ErrorHandler.handle_exception(self, "reloading teams", e)
 
-	def save_results_as_html(self):
-		"""Save the current results (HTML) to a file."""
-		html = self.result_box.toHtml()
-		if not html.strip():
-			QMessageBox.information(self, 'Save Results', 'No results to save yet.')
-			return
-		default_name = f"boxscore_{self._current_matchup_slug()}.html"
-		start_dir = os.path.expanduser('~')
-		path, _ = QFileDialog.getSaveFileName(self, 'Save Results as HTML', os.path.join(start_dir, default_name), 'HTML Files (*.html);;All Files (*)')
-		if not path:
-			return
-		try:
-			with open(path, 'w', encoding='utf-8') as f:
-				f.write(html)
-			QMessageBox.information(self, 'Save Results', f'Saved to:\n{path}')
-		except Exception as e:
-			QMessageBox.critical(self, 'Save Results', f'Failed to save file:\n{e}')
+    @safe_execute_method("toggling fullscreen")
+    def toggle_fullscreen(self, checked=False):
+        """Toggle between fullscreen and normal window."""
+        try:
+            if self.isFullScreen():
+                self.showNormal()
+                self.fullscreen_action.setChecked(False)
+                self.logger.info("Exited fullscreen mode")
+            else:
+                self.showFullScreen()
+                self.fullscreen_action.setChecked(True)
+                self.logger.info("Entered fullscreen mode")
+        except Exception as e:
+            ErrorHandler.handle_exception(self, "toggling fullscreen", e)
 
-	def copy_results_to_clipboard(self):
-		"""Copy the results as plain text to the system clipboard."""
-		text = self.result_box.toPlainText()
-		if not text.strip():
-			QMessageBox.information(self, 'Copy Results', 'No results to copy yet.')
-			return
-		QGuiApplication.clipboard().setText(text)
-		QMessageBox.information(self, 'Copy Results', 'Results copied to clipboard.')
+    @safe_execute_method("showing about dialog")
+    def show_about(self):
+        """Show the about dialog."""
+        ErrorHandler.show_info(self, 'About', 'Basketball GM Simulator\nCreated with PyQt5')
 
-	def print_results(self):
-		"""Open a print dialog to print the results pane."""
-		if not (self.result_box.toPlainText().strip() or self.result_box.toHtml().strip()):
-			QMessageBox.information(self, 'Print Results', 'No results to print yet.')
-			return
-		printer = QPrinter(QPrinter.HighResolution)
-		dialog = QPrintDialog(printer, self)
-		if dialog.exec_() == QPrintDialog.Accepted:
-			self.result_box.print(printer)
+    @safe_execute_method("returning to main menu")
+    def back_to_main_menu(self):
+        """Close this window and return to the main menu."""
+        try:
+            # Local import to avoid circular dependency
+            from .start_menu import MainMenuWindow
+            self._main_menu = MainMenuWindow()
+            self._main_menu.show()
+            self.close()
+            self.logger.info("Returned to main menu")
+        except Exception as e:
+            ErrorHandler.handle_exception(self, "returning to main menu", e)
 
-	def reload_teams(self):
-		"""Reload team list from core.teams and repopulate dropdowns."""
-		team_names = [t.name for t in load_teams()]
-		def repop(combo: QComboBox):
-			current = combo.currentText()
-			combo.blockSignals(True)
-			combo.clear()
-			combo.addItems(team_names)
-			idx = combo.findText(current)
-			if idx >= 0:
-				combo.setCurrentIndex(idx)
-			elif combo.count() > 0:
-				combo.setCurrentIndex(0)
-			combo.blockSignals(False)
-		repop(self.team1_combo)
-		repop(self.team2_combo)
+    def keyPressEvent(self, event):
+        """Let ESC exit fullscreen; otherwise default behavior."""
+        try:
+            if event.key() == Qt.Key_Escape and self.isFullScreen():
+                self.toggle_fullscreen()
+                return
+            super().keyPressEvent(event)
+        except Exception as e:
+            self.logger.error(f"Error in key press event: {e}")
 
-	def toggle_fullscreen(self, checked=False):
-		"""Toggle between fullscreen and normal window."""
-		if self.isFullScreen():
-			self.showNormal()
-			self.fullscreen_action.setChecked(False)
-		else:
-			self.showFullScreen()
-			self.fullscreen_action.setChecked(True)
-
-	def show_about(self):
-		from PyQt5.QtWidgets import QMessageBox
-		QMessageBox.information(self, 'About', 'Basketball GM Simulator\nCreated with PyQt5')
-
-
-
-	def back_to_main_menu(self):
-		"""Close this window and return to the main menu."""
-		# Local import to avoid circular dependency
-		from .start_menu import MainMenuWindow
-		self._main_menu = MainMenuWindow()
-		self._main_menu.show()
-		self.close()
-
-	def keyPressEvent(self, event):
-		"""Let ESC exit fullscreen; otherwise default behavior."""
-		if event.key() == Qt.Key_Escape and self.isFullScreen():
-			self.toggle_fullscreen()
-			return
-		super().keyPressEvent(event)
-
-	def simulate_game(self):
-		# Ensure we always use a valid selection from the predefined list
-		if self.team1_combo.currentIndex() < 0 and self.team1_combo.count() > 0:
-			self.team1_combo.setCurrentIndex(0)
-		if self.team2_combo.currentIndex() < 0 and self.team2_combo.count() > 0:
-			self.team2_combo.setCurrentIndex(0)
-		team1 = self.team1_combo.currentText()
-		team2 = self.team2_combo.currentText()
-		t1, t2, score1, score2, winner = simulate_game(team1, team2)
-		summary = generate_summary(t1, t2, score1, score2, winner)
-		box = generate_boxscore(t1, t2, score1, score2)
-		self.result_box.setHtml(summary + "<br>" + box)
+    @safe_execute_method("simulating game")
+    def simulate_game(self):
+        """Simulate a game between the selected teams."""
+        # Validate selections
+        try:
+            # Ensure we always use a valid selection from the predefined list
+            if self.team1_combo.currentIndex() < 0 and self.team1_combo.count() > 0:
+                self.team1_combo.setCurrentIndex(0)
+            if self.team2_combo.currentIndex() < 0 and self.team2_combo.count() > 0:
+                self.team2_combo.setCurrentIndex(0)
+            
+            team1 = self.team1_combo.currentText()
+            team2 = self.team2_combo.currentText()
+            
+            # Validate team selections
+            InputValidator.validate_team_selection(team1, team2)
+            
+            # Check for error states
+            if team1 in ["No teams available", "Error loading teams"] or \
+               team2 in ["No teams available", "Error loading teams"]:
+                ErrorHandler.show_error(self, "Invalid Teams", 
+                                      "Cannot simulate game with invalid team selections. "
+                                      "Please reload teams or restart the application.")
+                return
+            
+            self.logger.info(f"Starting simulation: {team1} vs {team2}")
+            
+            # Run simulation
+            t1, t2, score1, score2, winner = simulate_game(team1, team2)
+            summary = generate_summary(t1, t2, score1, score2, winner)
+            box = generate_boxscore(t1, t2, score1, score2)
+            
+            self.result_box.setHtml(summary + "<br>" + box)
+            self.logger.info(f"Simulation completed: {t1} {score1} - {score2} {t2}, Winner: {winner}")
+            
+        except ValidationError as e:
+            ErrorHandler.show_error(self, "Invalid Selection", str(e))
+        except Exception as e:
+            ErrorHandler.handle_exception(self, "simulating the game", e)
