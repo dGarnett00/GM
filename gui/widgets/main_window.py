@@ -76,12 +76,7 @@ class BasketballSimulatorWindow(QWidget):
 		view_menu.addAction(self.fullscreen_action)
 		self.menu_bar.addMenu(view_menu)
 
-		# Teams menu
-		teams_menu = QMenu('Teams', self)
-		reload_action = QAction('Reload Teams', self)
-		reload_action.triggered.connect(self.reload_teams)
-		teams_menu.addAction(reload_action)
-		self.menu_bar.addMenu(teams_menu)
+		# Teams menu removed per request
 
 		# Players menu removed per request
 
