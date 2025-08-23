@@ -72,6 +72,20 @@ def _simulate_scores(team1: str, team2: str):
         pts1 = max(60, min(120, pts1))
         pts2 = max(60, min(120, pts2))
 
+        # Add team streak/consistency: random chance for a "hot" or "cold" game
+        streak_chance = random.random()
+        if streak_chance < 0.08:
+            pts1 += random.randint(5, 12)  # hot streak
+        elif streak_chance > 0.92:
+            pts1 -= random.randint(5, 12)  # cold streak
+        streak_chance2 = random.random()
+        if streak_chance2 < 0.08:
+            pts2 += random.randint(5, 12)
+        elif streak_chance2 > 0.92:
+            pts2 -= random.randint(5, 12)
+        pts1 = max(60, min(130, pts1))
+        pts2 = max(60, min(130, pts2))
+
         # Overtime logic: if tied, simulate up to 3 OTs
         ot_count = 0
         while pts1 == pts2 and ot_count < 3:
@@ -83,9 +97,8 @@ def _simulate_scores(team1: str, team2: str):
             ot2 = max(6, ot2 - ot_count)
             pts1 += ot1
             pts2 += ot2
-            # Clamp again
-            pts1 = min(130, pts1)
-            pts2 = min(130, pts2)
+            pts1 = min(140, pts1)
+            pts2 = min(140, pts2)
         # If still tied after 3 OTs, nudge one team
         if pts1 == pts2:
             if random.random() < 0.5:
@@ -111,13 +124,12 @@ def simulate_game(team1, team2):
             add2 = random.randint(7, 15)
             score1 += add1
             score2 += add2
-            score1 = min(score1, 130)
-            score2 = min(score2, 130)
-            if score1 == score2 == 130:
+            score1 = min(score1, 140)
+            score2 = min(score2, 140)
+            if score1 == score2 == 140:
                 score1 -= 1
 
         winner = team1 if score1 > score2 else team2
-        # Return OT count for summary/highlight
         return team1, team2, score1, score2, winner, ot_count
     except Exception as e:
         print(f"[ERROR] simulate_game failed for teams '{team1}' vs '{team2}': {e}")
