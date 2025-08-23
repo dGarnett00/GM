@@ -30,6 +30,7 @@ class RostersWindow(QWidget):
         self.team_combo.setStyleSheet('padding: 4px; border-radius: 8px; background: #eebbc3; color: #232946;')
         self.team_combo.setFont(body_font)
         self.team_combo.addItems([t.name for t in load_teams()])
+        self.team_combo.addItem('Free Agents')
         self.team_combo.currentIndexChanged.connect(self._update_roster)
         layout.addWidget(self.team_combo)
 
@@ -44,8 +45,21 @@ class RostersWindow(QWidget):
 
     def _update_roster(self):
         team = self.team_combo.currentText()
-        roster = get_team_roster(team)
         self.player_list.clear()
+        if team == 'Free Agents':
+            # Load free agents from player_bio.json (team == '?')
+            import json
+            import os
+            bio_path = os.path.join(os.path.dirname(__file__), '../../core/players/player_bio.json')
+            with open(bio_path, encoding='utf-8') as f:
+                data = json.load(f)
+            free_agents = [p['name'] for p in data['players'] if p.get('team') == '?']
+            if not free_agents:
+                self.player_list.addItem('No free agents found.')
+            else:
+                self.player_list.addItems(sorted(free_agents))
+            return
+        roster = get_team_roster(team)
         if not roster:
             self.player_list.addItem('No roster found.')
             return
