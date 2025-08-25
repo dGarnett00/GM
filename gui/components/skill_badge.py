@@ -1,6 +1,12 @@
 from PyQt5.QtGui import QPixmap, QPainter, QColor, QFont, QPen
 from PyQt5.QtCore import Qt
 import os
+try:
+    # compiled resource for skill icons
+    from gui.resources import rc_skill_icons  # noqa: F401
+    _HAS_SKILL_RES = True
+except Exception:
+    _HAS_SKILL_RES = False
 
 # Cache for generated and loaded pixmaps
 _PIXMAP_CACHE: dict[str, QPixmap] = {}
@@ -58,14 +64,18 @@ def _load_icon_svg(sym: str, size: int = 20) -> QPixmap:
     key = f"svg:{sym}:{size}"
     if key in _PIXMAP_CACHE:
         return _PIXMAP_CACHE[key]
-    svg_path = os.path.join(_ICONS_DIR, f"{sym}.svg")
     pix = QPixmap()
     try:
-        if os.path.exists(svg_path):
-            # QPixmap can load SVG on many platforms; rely on Qt's support here
-            pix.load(svg_path)
-            if not pix.isNull() and (pix.width() != size or pix.height() != size):
-                pix = pix.scaled(size, size, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        if _HAS_SKILL_RES:
+            # load from compiled Qt resource
+            res_path = f':/skill_icons/{sym}.svg'
+            pix.load(res_path)
+        else:
+            svg_path = os.path.join(_ICONS_DIR, f"{sym}.svg")
+            if os.path.exists(svg_path):
+                pix.load(svg_path)
+        if not pix.isNull() and (pix.width() != size or pix.height() != size):
+            pix = pix.scaled(size, size, Qt.KeepAspectRatio, Qt.SmoothTransformation)
     except Exception:
         pass
     _PIXMAP_CACHE[key] = pix

@@ -27,3 +27,32 @@ IndentationError: unexpected indent
 2025-08-25 09:19:55,016 [INFO] Starting Basketball GM app
 2025-08-25 09:27:33,404 [INFO] Starting Basketball GM app
 2025-08-25 09:49:37,412 [INFO] Starting Basketball GM app
+2025-08-25 09:54:45,971 [INFO] Starting Basketball GM app
+2025-08-25 09:54:46,266 [ERROR] Failed to initialize MainMenuWindow
+Traceback (most recent call last):
+  File "C:\Users\bug\Desktop\Git\GM\main.py", line 101, in main
+    from gui.widgets.start_menu import MainMenuWindow  # Local import for robustness
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\bug\Desktop\Git\GM\gui\widgets\start_menu.py", line 16, in <module>
+    class MainMenuWindow(QWidget):
+    ...<86 lines>...
+            os.execl(python, python, *sys.argv)
+  File "C:\Users\bug\Desktop\Git\GM\gui\widgets\start_menu.py", line 49, in MainMenuWindow
+    start_btn.setFont(btn_font)
+                      ^^^^^^^^
+NameError: name 'btn_font' is not defined
+2025-08-25 10:04:15,655 [INFO] Starting Basketball GM app
+2025-08-25 10:14:38,264 [INFO] Starting Basketball GM app
+2025-08-25 10:14:38,521 [ERROR] Failed to initialize MainMenuWindow
+Traceback (most recent call last):
+  File "C:\Users\bug\Desktop\Git\GM\main.py", line 101, in main
+    from gui.widgets.start_menu import MainMenuWindow  # Local import for robustness
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\bug\Desktop\Git\GM\gui\widgets\start_menu.py", line 138
+    self.setWindowTitle('Basketball GM — Main Menu')
+    ^^^^
+IndentationError: expected an indented block after function definition on line 137
+2025-08-25 10:19:42,155 [INFO] Starting Basketball GM app
+2025-08-25 10:28:43,576 [INFO] Starting Basketball GM app
+2025-08-25 10:30:52,912 [INFO] Starting Basketball GM app
+2025-08-25 10:32:26,063 [INFO] Starting Basketball GM app

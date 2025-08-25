@@ -33,6 +33,7 @@ class BasketballSimulatorWindow(QWidget):
 
 		# Back button under team selectors
 		self.back_btn = QPushButton('Back to Main Menu')
+		self.back_btn.setObjectName('BackButton')
 		self.back_btn.setFont(font_button)
 		self.back_btn.clicked.connect(self.back_to_main_menu)
 
@@ -65,10 +66,14 @@ class BasketballSimulatorWindow(QWidget):
 
 		# Results pane
 		self.result_box = ResultsPane(font_label)
+		# mark results as a card for QSS
+		self.result_box.setObjectName('ResultsPane')
 
 		# Play-by-play widget and controls
 		self.play_by_play = PlayByPlayWidget()
+		self.play_by_play.setObjectName('PlayByPlayWidget')
 		self.load_pbp_btn = QPushButton('Load Play-by-Play HTML')
+		self.load_pbp_btn.setObjectName('LoadPBPButton')
 		self.load_pbp_btn.setFont(font_button)
 		self.load_pbp_btn.clicked.connect(self._load_play_by_play_html)
 

@@ -1,0 +1,39 @@
+/* Component-level polish */
+
+/* Team combo and OVR label */
+QComboBox#TeamCombo { font-weight: 600; }
+QLabel#OvrLabel { color: #cfe9ff; font-weight: 600; }
+
+/* Skill legend dialog */
+QDialog { background: qlineargradient(x1:0,y1:0,x2:1,y2:1, stop:0 #0f1f2a, stop:1 #142a36); }
+
+/* Small rounded badges (if QLabel used for icon) */
+QLabel { color: #e6eef8; }
+
+/* Play-by-Play toolbar */
+QPushButton#PBPPlay, QPushButton#PBPNext {
+	background: #1e90ff;
+	color: white;
+	border-radius: 6px;
+	padding: 6px 10px;
+	margin: 2px;
+}
+QPushButton#PBPPlay:hover, QPushButton#PBPNext:hover {
+	background: #2aa3ff;
+}
+QLabel#PBPSpdLbl {
+	color: #dbeeff;
+	padding-left: 6px;
+}
+QSlider::groove:horizontal {
+	height: 6px;
+	background: #23343f;
+	border-radius: 3px;
+}
+QSlider::handle:horizontal {
+	background: #88c0ff;
+	width: 12px;
+	margin: -4px 0px;
+	border-radius: 6px;
+}
+

@@ -30,9 +30,13 @@ class PlayByPlayWidget(QWidget):
 
         # Controls
         controls = QHBoxLayout()
+        # mark controls for styling
         self.play_btn = QPushButton('Play')
+        self.play_btn.setObjectName('PBPPlay')
         self.next_btn = QPushButton('Next')
+        self.next_btn.setObjectName('PBPNext')
         self.speed_label = QLabel('1.00x')
+        self.speed_label.setObjectName('PBPSpdLbl')
         self.speed_slider = QSlider(Qt.Horizontal)
         self.speed_slider.setRange(10, 300)  # percent (0.1x - 3.0x)
         self.speed_slider.setValue(100)

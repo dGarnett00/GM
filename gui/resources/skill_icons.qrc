@@ -1,0 +1,13 @@
+<RCC>
+  <qresource prefix="/skill_icons">
+    <file>skill_icons/3.svg</file>
+    <file>skill_icons/A.svg</file>
+    <file>skill_icons/B.svg</file>
+    <file>skill_icons/Di.svg</file>
+    <file>skill_icons/Dp.svg</file>
+    <file>skill_icons/Po.svg</file>
+    <file>skill_icons/Ps.svg</file>
+    <file>skill_icons/R.svg</file>
+    <file>skill_icons/V.svg</file>
+  </qresource>
+</RCC>

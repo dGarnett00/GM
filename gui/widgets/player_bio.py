@@ -8,6 +8,7 @@ class PlayerBioDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle(f"Player Bio - {player_name}")
         self.resize(400, 600)
+        self.setObjectName('PlayerBioDialog')
         layout = QVBoxLayout()
         font = QFont('Arial', 12)
 
