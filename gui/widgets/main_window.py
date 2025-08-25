@@ -3,7 +3,6 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtGui import QFont, QGuiApplication
 from PyQt5.QtCore import Qt
-# generate_summary removed with simulation
 from core.teams import load_teams
 from core.teams.team_overall import load_team_overall
 from PyQt5.QtPrintSupport import QPrinter, QPrintDialog
@@ -124,9 +123,7 @@ class BasketballSimulatorWindow(QWidget):
 		team_layout.addLayout(team2_layout)
 		layout.addLayout(team_layout)
 
-		# Live feed removed per request
-
-		# --- Simulation controls removed ---
+		# Team selection and results layout
 		user_choice_layout = QHBoxLayout()
 		layout.addLayout(user_choice_layout)
 
@@ -152,7 +149,7 @@ class BasketballSimulatorWindow(QWidget):
 		self.back_btn.clicked.connect(self.back_to_main_menu)
 		layout.addWidget(self.back_btn)
 
-		# Simulate button removed
+		# Results pane
 
 		self.result_box = QTextEdit()
 		self.result_box.setReadOnly(True)

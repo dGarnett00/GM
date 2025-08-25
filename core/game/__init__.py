@@ -1,3 +1,3 @@
-"""Game-related logic (simulation removed)."""
+"""Game module removed."""
 
-__all__ = []
+__all__: list[str] = []
