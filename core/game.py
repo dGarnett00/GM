@@ -1,6 +1,5 @@
-"""Compatibility shim exposing game and boxscore APIs under core.game."""
+"""Compatibility shim for boxscore API under core.game (simulation removed)."""
 
-from .game.sim import simulate_game, generate_summary
 from .boxscore.generate import generate_boxscore
 
-__all__ = ["simulate_game", "generate_summary", "generate_boxscore"]
+__all__ = ["generate_boxscore"]

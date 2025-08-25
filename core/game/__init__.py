@@ -1,5 +1,3 @@
-"""Game-related logic (simulation, rules)."""
+"""Game-related logic (simulation removed)."""
 
-from .sim import simulate_game, generate_summary
-
-__all__ = ["simulate_game", "generate_summary"]
+__all__ = []

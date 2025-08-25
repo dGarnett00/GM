@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import (
-	QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QTextEdit, QMenuBar, QMenu, QAction, QVBoxLayout as QVBL, QComboBox, QFileDialog, QMessageBox, QListWidget
+	QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QTextEdit, QMenuBar, QMenu, QAction, QVBoxLayout as QVBL, QComboBox, QFileDialog, QMessageBox
 )
 # Boxscore generation available in core, but not used here after simulation removal
 from PyQt5.QtGui import QFont, QGuiApplication
@@ -125,15 +125,7 @@ class BasketballSimulatorWindow(QWidget):
 		team_layout.addLayout(team2_layout)
 		layout.addLayout(team_layout)
 
-		# --- Live Event Feed (UI retained but static) ---
-		event_feed_layout = QHBoxLayout()
-		self.event_feed = QListWidget()
-		self.event_feed.setStyleSheet('background: #181b2a; color: #eebbc3; border-radius: 8px; padding: 6px;')
-		self.event_feed.setMinimumHeight(120)
-		self.event_feed.setMaximumHeight(180)
-		event_feed_layout.addWidget(QLabel('Live Game Feed (disabled):'))
-		event_feed_layout.addWidget(self.event_feed)
-		layout.addLayout(event_feed_layout)
+		# Live feed removed per request
 
 		# --- Simulation controls removed ---
 		user_choice_layout = QHBoxLayout()
@@ -306,10 +298,6 @@ class BasketballSimulatorWindow(QWidget):
 			self.toggle_fullscreen()
 			return
 		super().keyPressEvent(event)
-
-	def simulate_game(self):
-		# Simulation removed: show info message
-		QMessageBox.information(self, 'Simulation Removed', 'Game simulation has been removed from this build.')
 
 
 	# User action handlers removed
