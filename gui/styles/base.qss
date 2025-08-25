@@ -1,0 +1,37 @@
+/* Global base styles */
+QWidget {
+  background-color: #232946;
+  color: #fffffe;
+  font-family: Arial;
+}
+
+QLabel#TitleLabel {
+  font-size: 20pt;
+  font-weight: 700;
+  qproperty-alignment: 'AlignCenter';
+}
+
+QPushButton {
+  background: #393d63;
+  color: #fffffe;
+  padding: 10px;
+  border-radius: 8px;
+}
+QPushButton[accent="true"] {
+  background: #eebbc3;
+  color: #232946;
+}
+
+QComboBox {
+  padding: 4px;
+  border-radius: 8px;
+  background: #eebbc3;
+  color: #232946;
+}
+
+QTextEdit {
+  background: #121629;
+  color: #fffffe;
+  border-radius: 8px;
+  padding: 10px;
+}

@@ -25,6 +25,22 @@ def main():
     # Create Qt application
     try:
         app = QApplication(sys.argv)
+        # Apply global QSS stylesheet
+        try:
+            base_dir = os.path.dirname(os.path.abspath(__file__))
+            styles_dir = os.path.join(base_dir, 'gui', 'styles')
+            qss_files = ['base.qss', 'start_menu.qss', 'main_window.qss']
+            buf = []
+            for name in qss_files:
+                path = os.path.join(styles_dir, name)
+                if os.path.exists(path):
+                    with open(path, 'r', encoding='utf-8') as f:
+                        buf.append(f.read())
+            if buf:
+                app.setStyleSheet('\n\n'.join(buf))
+        except Exception:
+            # Don't block startup if styling fails
+            pass
     except Exception:
         # If even QApplication fails, we cannot continue with a GUI
         traceback.print_exc()

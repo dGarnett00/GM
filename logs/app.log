@@ -7,3 +7,13 @@
 2025-08-25 01:23:13,568 [INFO] Starting Basketball GM app
 2025-08-25 01:37:51,665 [INFO] Starting Basketball GM app
 2025-08-25 01:42:19,887 [INFO] Starting Basketball GM app
+2025-08-25 02:08:25,430 [INFO] Starting Basketball GM app
+2025-08-25 02:08:25,692 [ERROR] Failed to initialize MainMenuWindow
+Traceback (most recent call last):
+  File "C:\Users\bug\Desktop\Git\GM\main.py", line 82, in main
+    from gui.widgets.start_menu import MainMenuWindow  # Local import for robustness
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\bug\Desktop\Git\GM\gui\widgets\start_menu.py", line 37
+    title.setFont(title_font)
+IndentationError: unexpected indent
+2025-08-25 02:13:27,870 [INFO] Starting Basketball GM app

@@ -1,0 +1,4 @@
+/* Styles specific to the Exhibition Manager window */
+#TitleLabel {
+  font-size: 20pt;
+}
