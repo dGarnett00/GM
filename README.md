@@ -1,6 +1,6 @@
-# Basketball GM (Simulation Removed)
+# Basketball GM
 
-A modern, modular desktop app (PyQt5). Game simulation features have been removed in this build; box score utilities and team browsing remain.
+A modern, modular desktop app (PyQt5). Game simulation and box score generation have been removed in this build; team browsing and basic UI scaffolding remain.
 
 ## Structure
 
@@ -9,8 +9,6 @@ A modern, modular desktop app (PyQt5). Game simulation features have been remove
 	- widgets/main_window.py — Main window (menu + simulator)
 	- dialogs/ — Placeholders for future dialogs
 - core/ — Domain logic
-	- boxscore/ — Box score generation
-		- generate.py — generate_boxscore
 - simulation/ — Removed
 - ui/ — Legacy stub pointing to new GUI (safe to remove later)
 - config/, resources/ — Reserved for settings/assets
@@ -24,5 +22,5 @@ Windows: double-click `run_app.bat` to auto-install PyQt5 (if needed) and launch
 
 ## Notes
 
-- Game simulation, summaries, and live event feeds have been removed.
-- The main window retains team selection and result pane; simulate actions are disabled.
+- Game simulation, summaries, live event feeds, and box score generation have been removed.
+- The main window retains team selection and a results pane for notes/export.

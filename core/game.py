@@ -1,5 +1,3 @@
-"""Compatibility shim for boxscore API under core.game (simulation removed)."""
+"""Game module placeholder (simulation and boxscore removed)."""
 
-from .boxscore.generate import generate_boxscore
-
-__all__ = ["generate_boxscore"]
+__all__: list[str] = []

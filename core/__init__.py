@@ -1,7 +1,3 @@
-"""Core domain logic for the Basketball GM app (simulation removed)."""
+"""Core domain logic for the Basketball GM app."""
 
-from .boxscore import generate_boxscore
-
-__all__ = [
-	"generate_boxscore",
-]
+__all__: list[str] = []

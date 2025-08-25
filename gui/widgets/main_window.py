@@ -1,7 +1,6 @@
 from PyQt5.QtWidgets import (
 	QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QTextEdit, QMenuBar, QMenu, QAction, QVBoxLayout as QVBL, QComboBox, QFileDialog, QMessageBox
 )
-# Boxscore generation available in core, but not used here after simulation removal
 from PyQt5.QtGui import QFont, QGuiApplication
 from PyQt5.QtCore import Qt
 # generate_summary removed with simulation
@@ -212,7 +211,7 @@ class BasketballSimulatorWindow(QWidget):
 		if not html.strip():
 			QMessageBox.information(self, 'Save Results', 'No results to save yet.')
 			return
-		default_name = f"boxscore_{self._current_matchup_slug()}.html"
+		default_name = f"results_{self._current_matchup_slug()}.html"
 		start_dir = os.path.expanduser('~')
 		path, _ = QFileDialog.getSaveFileName(self, 'Save Results as HTML', os.path.join(start_dir, default_name), 'HTML Files (*.html);;All Files (*)')
 		if not path:
