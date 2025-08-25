@@ -37,7 +37,8 @@ class MainMenuWindow(QWidget):
         title.setAlignment(Qt.AlignCenter)
         layout.addWidget(title)
 
-        subtitle = QLabel('Exhibition Manager (simulation removed)')
+        # Subtitle without the prior "simulation removed" note
+        subtitle = QLabel('Exhibition Manager')
         subtitle.setFont(sub_font)
         subtitle.setAlignment(Qt.AlignCenter)
         layout.addWidget(subtitle)
