@@ -1,6 +1,6 @@
-# Basketball Game Simulator
+# Basketball GM (Simulation Removed)
 
-A modern, modular desktop app (PyQt5) for simulating exhibition basketball games.
+A modern, modular desktop app (PyQt5). Game simulation features have been removed in this build; box score utilities and team browsing remain.
 
 ## Structure
 
@@ -9,11 +9,9 @@ A modern, modular desktop app (PyQt5) for simulating exhibition basketball games
 	- widgets/main_window.py — Main window (menu + simulator)
 	- dialogs/ — Placeholders for future dialogs
 - core/ — Domain logic
-	- game/ — Simulation + summary generation
-		- sim.py — simulate_game, generate_summary
 	- boxscore/ — Box score generation
 		- generate.py — generate_boxscore
-- simulation/ — Legacy shim forwarding to core/ (safe to remove later)
+- simulation/ — Removed
 - ui/ — Legacy stub pointing to new GUI (safe to remove later)
 - config/, resources/ — Reserved for settings/assets
 
@@ -23,3 +21,8 @@ A modern, modular desktop app (PyQt5) for simulating exhibition basketball games
 2. Start the app: `python main.py`
 
 Windows: double-click `run_app.bat` to auto-install PyQt5 (if needed) and launch.
+
+## Notes
+
+- Game simulation, summaries, and live event feeds have been removed.
+- The main window retains team selection and result pane; simulate actions are disabled.

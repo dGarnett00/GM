@@ -1,11 +1,16 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QPushButton
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QPushButton, QMessageBox
 from PyQt5.QtGui import QFont
 from PyQt5.QtCore import Qt
 import os
 import sys
 
-from .main_window import BasketballSimulatorWindow
-from .rosters_window import RostersWindow
+"""
+Main menu for the Basketball GM app.
+
+Imports of heavy windows are intentionally done lazily inside methods to reduce
+startup failures if optional modules have issues. This ensures the app launches
+reliably and can surface errors gracefully.
+"""
 
 
 class MainMenuWindow(QWidget):
@@ -32,7 +37,7 @@ class MainMenuWindow(QWidget):
         title.setAlignment(Qt.AlignCenter)
         layout.addWidget(title)
 
-        subtitle = QLabel('Exhibition Game Simulator')
+        subtitle = QLabel('Exhibition Manager (simulation removed)')
         subtitle.setFont(sub_font)
         subtitle.setAlignment(Qt.AlignCenter)
         layout.addWidget(subtitle)
@@ -66,15 +71,23 @@ class MainMenuWindow(QWidget):
 
     def start_game(self):
         # Launch the simulator window and close the main menu
-        if self.sim_window is None:
-            self.sim_window = BasketballSimulatorWindow()
-        self.sim_window.show()
-        self.close()
+        try:
+            if self.sim_window is None:
+                from .main_window import BasketballSimulatorWindow  # lazy import
+                self.sim_window = BasketballSimulatorWindow()
+            self.sim_window.show()
+            self.close()
+        except Exception as e:
+            QMessageBox.critical(self, 'Unable to open', f'Failed to open Exhibition window.\n\n{e}')
 
     def open_rosters(self):
-        if self.rosters_window is None:
-            self.rosters_window = RostersWindow()
-        self.rosters_window.show()
+        try:
+            if self.rosters_window is None:
+                from .rosters_window import RostersWindow  # lazy import
+                self.rosters_window = RostersWindow()
+            self.rosters_window.show()
+        except Exception as e:
+            QMessageBox.critical(self, 'Unable to open', f'Failed to open Rosters window.\n\n{e}')
 
     def reload_app(self):
         # Restart the Python process to fully reload the app

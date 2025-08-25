@@ -18,7 +18,7 @@ class BasketballSimulatorWindow(QWidget):
 		self.init_ui()
 
 	def init_ui(self):
-		self.setWindowTitle('Exhibition Basketball Game Simulator')
+		self.setWindowTitle('Basketball GM — Exhibition Manager')
 		# Start at a friendly size but allow resizing and fullscreen
 		self.resize(480, 400)
 		self.setStyleSheet('background-color: #232946; color: #fffffe;')
@@ -93,7 +93,7 @@ class BasketballSimulatorWindow(QWidget):
 		main_layout.setMenuBar(self.menu_bar)
 
 		layout = QVBoxLayout()
-		title = QLabel('🏀 Basketball Game Simulator')
+		title = QLabel('🏀 Exhibition Manager')
 		title.setFont(font_title)
 		title.setAlignment(Qt.AlignCenter)
 		layout.addWidget(title)
@@ -288,7 +288,7 @@ class BasketballSimulatorWindow(QWidget):
 
 	def show_about(self):
 		from PyQt5.QtWidgets import QMessageBox
-		QMessageBox.information(self, 'About', 'Basketball GM Simulator\nCreated with PyQt5')
+		QMessageBox.information(self, 'About', 'Basketball GM — Exhibition Manager\nCreated with PyQt5')
 
 
 
