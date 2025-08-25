@@ -17,3 +17,7 @@ Traceback (most recent call last):
     title.setFont(title_font)
 IndentationError: unexpected indent
 2025-08-25 02:13:27,870 [INFO] Starting Basketball GM app
+2025-08-25 02:24:07,188 [INFO] Starting Basketball GM app
+2025-08-25 02:25:37,781 [INFO] Starting Basketball GM app
+2025-08-25 02:29:08,546 [INFO] Starting Basketball GM app
+2025-08-25 02:31:37,390 [INFO] Starting Basketball GM app

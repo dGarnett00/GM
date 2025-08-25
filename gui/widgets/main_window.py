@@ -1,9 +1,11 @@
 from PyQt5.QtWidgets import (
-	QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QTextEdit, QMenuBar, QMenu, QAction, QVBoxLayout as QVBL, QFileDialog, QMessageBox
+	QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QVBoxLayout as QVBL, QFileDialog, QMessageBox
 )
 from PyQt5.QtGui import QFont, QGuiApplication
 from PyQt5.QtCore import Qt
 from gui.components.team_selector import TeamSelector
+from gui.components.results_pane import ResultsPane
+from gui.components.menu_builder import MenuBuilder
 from PyQt5.QtPrintSupport import QPrinter, QPrintDialog
 import os
 import random
@@ -16,6 +18,7 @@ class BasketballSimulatorWindow(QWidget):
 
 	def init_ui(self):
 		self.setWindowTitle('Basketball GM — Exhibition Manager')
+		self.setObjectName('BasketballSimulatorWindow')
 		# Start at a friendly size but allow resizing and fullscreen
 		self.resize(480, 400)
 		# Styling now handled by QSS
@@ -24,110 +27,43 @@ class BasketballSimulatorWindow(QWidget):
 		font_label = QFont('Arial', 12)
 		font_button = QFont('Arial', 12, QFont.Bold)
 
-		# Menu bar
-		self.menu_bar = QMenuBar(self)
+		# Menu bar via helper
+		self.menu_bar = MenuBuilder(self).build()
 
-		# File menu (Exhibition controls and utilities)
-		file_menu = QMenu('File', self)
-		new_action = QAction('New Exhibition', self)
-		new_action.setShortcut('Ctrl+N')
-		new_action.triggered.connect(self.new_exhibition)
-		random_action = QAction('Randomize Teams', self)
-		random_action.setShortcut('Ctrl+R')
-		random_action.triggered.connect(self.randomize_teams)
-		swap_action = QAction('Swap Teams', self)
-		swap_action.setShortcut('Ctrl+S')
-		swap_action.triggered.connect(self.swap_teams)
-		clear_action = QAction('Clear Results', self)
-		clear_action.setShortcut('Ctrl+L')
-		clear_action.triggered.connect(self.clear_results)
-		save_action = QAction('Save Results as HTML…', self)
-		save_action.setShortcut('Ctrl+Shift+S')
-		save_action.triggered.connect(self.save_results_as_html)
-		copy_action = QAction('Copy Results to Clipboard', self)
-		copy_action.setShortcut('Ctrl+Alt+C')
-		copy_action.triggered.connect(self.copy_results_to_clipboard)
-		print_action = QAction('Print Results…', self)
-		print_action.setShortcut('Ctrl+P')
-		print_action.triggered.connect(self.print_results)
-		back_action = QAction('Back to Main Menu', self)
-		back_action.setShortcut('Ctrl+M')
-		back_action.triggered.connect(self.back_to_main_menu)
-		exit_action = QAction('Exit', self)
-		exit_action.triggered.connect(self.close)
+		# Back button under team selectors
+		self.back_btn = QPushButton('Back to Main Menu')
+		self.back_btn.setFont(font_button)
+		self.back_btn.clicked.connect(self.back_to_main_menu)
 
-		for act in (new_action, random_action, swap_action, clear_action):
-			file_menu.addAction(act)
-		file_menu.addSeparator()
-		for act in (save_action, copy_action, print_action):
-			file_menu.addAction(act)
-		file_menu.addSeparator()
-		file_menu.addAction(back_action)
-		file_menu.addAction(exit_action)
-		self.menu_bar.addMenu(file_menu)
-
-		# View menu
-		view_menu = QMenu('View', self)
-		self.fullscreen_action = QAction('Toggle Full Screen', self)
-		self.fullscreen_action.setCheckable(True)
-		self.fullscreen_action.setShortcut('F11')
-		self.fullscreen_action.triggered.connect(self.toggle_fullscreen)
-		view_menu.addAction(self.fullscreen_action)
-		self.menu_bar.addMenu(view_menu)
-
-		# Teams menu removed per request
-
-
-
-		help_menu = QMenu('Help', self)
-		about_action = QAction('About', self)
-		about_action.triggered.connect(self.show_about)
-		help_menu.addAction(about_action)
-		self.menu_bar.addMenu(help_menu)
-
-
+		# Layouts
 		main_layout = QVBL()
 		main_layout.setMenuBar(self.menu_bar)
-
 		layout = QVBoxLayout()
+
+		# Title
 		title = QLabel('🏀 Exhibition Manager')
 		title.setObjectName('TitleLabel')
 		title.setFont(font_title)
 		title.setAlignment(Qt.AlignCenter)
 		layout.addWidget(title)
 
+		# Team selectors
 		team_layout = QHBoxLayout()
-
-		# Use reusable team selector components
 		self.team1_selector = TeamSelector(font_label)
 		self.team2_selector = TeamSelector(font_label)
-		team1_layout = QVBoxLayout()
-		team1_layout.addWidget(self.team1_selector)
-		team2_layout = QVBoxLayout()
-		team2_layout.addWidget(self.team2_selector)
-		team_layout.addLayout(team1_layout)
-		team_layout.addLayout(team2_layout)
+		left = QVBoxLayout()
+		left.addWidget(self.team1_selector)
+		right = QVBoxLayout()
+		right.addWidget(self.team2_selector)
+		team_layout.addLayout(left)
+		team_layout.addLayout(right)
 		layout.addLayout(team_layout)
 
-		# Team selection and results layout
-		user_choice_layout = QHBoxLayout()
-		layout.addLayout(user_choice_layout)
-
-		# Connect signals if needed
-		self.team1_selector.teamChanged.connect(lambda _: None)
-		self.team2_selector.teamChanged.connect(lambda _: None)
-
-		# Back button under team selectors
-		self.back_btn = QPushButton('Back to Main Menu')
-		self.back_btn.setFont(font_button)
-		self.back_btn.clicked.connect(self.back_to_main_menu)
+		# Back button
 		layout.addWidget(self.back_btn)
 
 		# Results pane
-
-		self.result_box = QTextEdit()
-		self.result_box.setReadOnly(True)
-		self.result_box.setFont(font_label)
+		self.result_box = ResultsPane(font_label)
 		layout.addWidget(self.result_box)
 
 		main_layout.addLayout(layout)

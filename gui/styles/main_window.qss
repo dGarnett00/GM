@@ -1,4 +1,15 @@
-/* Styles specific to the Exhibition Manager window */
-#TitleLabel {
-  font-size: 20pt;
+/* Exhibition Manager window styles */
+BasketballSimulatorWindow QLabel#TitleLabel { font-size: 22px; }
+BasketballSimulatorWindow QPushButton {
+  padding: 8px 12px;
+  border-radius: 8px;
 }
+BasketballSimulatorWindow QTextEdit {
+  background: #121629;
+  color: #e6e6e6;
+  border: 1px solid #2a2a3b;
+  border-radius: 8px;
+}
+BasketballSimulatorWindow QMenuBar { background: #1f2033; color: #e6e6e6; }
+BasketballSimulatorWindow QMenuBar::item:selected { background: #2b2c44; }
+BasketballSimulatorWindow QMenu { background: #1f2033; color: #e6e6e6; }

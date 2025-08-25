@@ -6,7 +6,6 @@ from core.teams import load_teams, get_team_roster
 from .player_bio import PlayerBioDialog
 
 
-
 class RostersWindow(QWidget):
     def __init__(self):
         super().__init__()
@@ -15,19 +14,21 @@ class RostersWindow(QWidget):
     def _init_ui(self):
         self.setWindowTitle('Team Rosters')
         self.resize(500, 500)
-        self.setStyleSheet('background-color: #232946; color: #fffffe;')
+        # Styling handled by QSS
+        self.setObjectName('RostersWindow')
 
         title_font = QFont('Arial', 18, QFont.Bold)
         body_font = QFont('Arial', 11)
 
         layout = QVBoxLayout()
         title = QLabel('Team Rosters')
+        title.setObjectName('TitleLabel')
         title.setFont(title_font)
         title.setAlignment(Qt.AlignCenter)
         layout.addWidget(title)
 
         self.team_combo = QComboBox()
-        self.team_combo.setStyleSheet('padding: 4px; border-radius: 8px; background: #eebbc3; color: #232946;')
+        self.team_combo.setObjectName('TeamCombo')
         self.team_combo.setFont(body_font)
         self.team_combo.addItems([t.name for t in load_teams()])
         self.team_combo.addItem('Free Agents')
@@ -35,8 +36,8 @@ class RostersWindow(QWidget):
         layout.addWidget(self.team_combo)
 
         self.player_list = QListWidget()
+        self.player_list.setObjectName('PlayerList')
         self.player_list.setFont(body_font)
-        self.player_list.setStyleSheet('background: #121629; color: #fffffe; border-radius: 8px; padding: 10px;')
         self.player_list.itemDoubleClicked.connect(self._show_player_bio)
         layout.addWidget(self.player_list)
 

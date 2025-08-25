@@ -1,0 +1,8 @@
+/* PlayerBio dialog styles */
+QDialog {
+  background: #232946;
+  color: #fffffe;
+}
+QDialog QLabel {
+  padding: 2px 0;
+}
