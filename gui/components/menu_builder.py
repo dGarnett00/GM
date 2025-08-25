@@ -45,6 +45,17 @@ class MenuBuilder:
 
         help_menu = QMenu('Help', self.host)
         add_action(help_menu, 'About', self.host.show_about)
+        # Player ratings & skill legend
+        def _open_skill_legend():
+            try:
+                from gui.widgets.skill_legend import SkillLegendDialog
+                dlg = SkillLegendDialog(self.host)
+                dlg.exec_()
+            except Exception:
+                # If import fails, fallback to About
+                self.host.show_about()
+
+        add_action(help_menu, 'Player Ratings & Skills', _open_skill_legend)
         bar.addMenu(help_menu)
 
         return bar

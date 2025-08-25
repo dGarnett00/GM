@@ -1,1 +1,3 @@
 PyQt5
+# Optional (for high-fidelity HTML/CSS/JS rendering in the play-by-play view):
+# PyQtWebEngine

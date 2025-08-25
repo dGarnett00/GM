@@ -65,8 +65,29 @@ class PlayerBioDialog(QDialog):
 
             # Skill
             layout.addWidget(QLabel("<b>Skill</b>"))
-            for k, v in (info.get('skill', {}) or {}).items():
-                layout.addWidget(QLabel(f"{k}: {v}"))
+            skills = info.get('skill', {}) or {}
+            # Mapping of short symbol -> full description
+            symbol_desc = {
+                '3': 'Three Point Shooter',
+                'A': 'Athlete',
+                'B': 'Ball Handler',
+                'Di': 'Interior Defender',
+                'Dp': 'Perimeter Defender',
+                'Po': 'Post Scorer',
+                'Ps': 'Passer',
+                'R': 'Rebounder',
+                'V': 'Volume Scorer',
+            }
+            # Display each skill symbol with tooltip and associated numeric rating when available
+            for sym, val in skills.items():
+                lbl = QLabel()
+                desc = symbol_desc.get(sym, '')
+                if desc:
+                    lbl.setText(f"<b>{sym}</b>")
+                    lbl.setToolTip(f"{desc} — {val}")
+                else:
+                    lbl.setText(f"{sym}: {val}")
+                layout.addWidget(lbl)
 
         else:
             label = QLabel("No player info found.")

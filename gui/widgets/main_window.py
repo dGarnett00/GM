@@ -6,6 +6,7 @@ from PyQt5.QtCore import Qt
 from gui.components.team_selector import TeamSelector
 from gui.components.results_pane import ResultsPane
 from gui.components.menu_builder import MenuBuilder
+from gui.components.play_by_play import PlayByPlayWidget
 from PyQt5.QtPrintSupport import QPrinter, QPrintDialog
 import os
 import random
@@ -64,7 +65,22 @@ class BasketballSimulatorWindow(QWidget):
 
 		# Results pane
 		self.result_box = ResultsPane(font_label)
-		layout.addWidget(self.result_box)
+
+		# Play-by-play widget and controls
+		self.play_by_play = PlayByPlayWidget()
+		self.load_pbp_btn = QPushButton('Load Play-by-Play HTML')
+		self.load_pbp_btn.setFont(font_button)
+		self.load_pbp_btn.clicked.connect(self._load_play_by_play_html)
+
+		# Two-column area: results on the left, play-by-play on the right
+		two_col = QHBoxLayout()
+		left_col = QVBoxLayout()
+		left_col.addWidget(self.result_box)
+		left_col.addWidget(self.load_pbp_btn)
+		# Allow left column to expand more than right
+		two_col.addLayout(left_col, 3)
+		two_col.addWidget(self.play_by_play, 2)
+		layout.addLayout(two_col)
 
 		main_layout.addLayout(layout)
 		self.setLayout(main_layout)
@@ -165,6 +181,21 @@ class BasketballSimulatorWindow(QWidget):
 	def show_about(self):
 		from PyQt5.QtWidgets import QMessageBox
 		QMessageBox.information(self, 'About', 'Basketball GM — Exhibition Manager\nCreated with PyQt5')
+
+
+	def _load_play_by_play_html(self):
+		from PyQt5.QtWidgets import QFileDialog, QMessageBox
+		start_dir = os.path.expanduser('~')
+		path, _ = QFileDialog.getOpenFileName(self, 'Load Play-by-Play HTML', start_dir, 'HTML Files (*.html *.htm);;All Files (*)')
+		if not path:
+			return
+		try:
+			with open(path, 'r', encoding='utf-8') as f:
+				html = f.read()
+			self.play_by_play.load_html(html)
+			QMessageBox.information(self, 'Play-by-Play', f'Loaded play-by-play from:\n{path}')
+		except Exception as e:
+			QMessageBox.critical(self, 'Play-by-Play', f'Failed to load file:\n{e}')
 
 
 
