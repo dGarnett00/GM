@@ -4,16 +4,22 @@ from PyQt5.QtCore import pyqtSignal, Qt
 from core.teams import load_teams
 from core.teams.team_overall import load_team_overall
 
+
 class TeamSelector(QWidget):
     teamChanged = pyqtSignal(str)
 
     def __init__(self, label_font: QFont | None = None, parent=None):
         super().__init__(parent)
+        self.setObjectName('TeamSelector')
         self._label_font = label_font or QFont('Arial', 12)
+
         self.combo = QComboBox()
+        self.combo.setObjectName('TeamCombo')
         self.combo.setEditable(False)
         self.combo.currentIndexChanged.connect(self._emit_change)
+
         self.ovr_label = QLabel()
+        self.ovr_label.setObjectName('OvrLabel')
         self.ovr_label.setAlignment(Qt.AlignCenter)
         self.ovr_label.setFont(self._label_font)
 

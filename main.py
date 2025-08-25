@@ -29,13 +29,26 @@ def main():
         try:
             base_dir = os.path.dirname(os.path.abspath(__file__))
             styles_dir = os.path.join(base_dir, 'gui', 'styles')
-            qss_files = ['base.qss', 'start_menu.qss', 'main_window.qss']
             buf = []
-            for name in qss_files:
-                path = os.path.join(styles_dir, name)
-                if os.path.exists(path):
-                    with open(path, 'r', encoding='utf-8') as f:
-                        buf.append(f.read())
+            # Load base.qss first if present
+            base_qss = os.path.join(styles_dir, 'base.qss')
+            if os.path.exists(base_qss):
+                with open(base_qss, 'r', encoding='utf-8') as f:
+                    buf.append(f.read())
+            # Then load any other .qss files recursively (excluding base.qss to avoid duplication)
+            for root, _dirs, files in os.walk(styles_dir):
+                for fname in files:
+                    if not fname.lower().endswith('.qss'):
+                        continue
+                    if fname == 'base.qss':
+                        continue
+                    path = os.path.join(root, fname)
+                    try:
+                        with open(path, 'r', encoding='utf-8') as f:
+                            buf.append(f.read())
+                    except Exception:
+                        # Skip unreadable style files
+                        continue
             if buf:
                 app.setStyleSheet('\n\n'.join(buf))
         except Exception:
