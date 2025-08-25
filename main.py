@@ -35,19 +35,19 @@ def main():
             if os.path.exists(base_qss):
                 with open(base_qss, 'r', encoding='utf-8') as f:
                     buf.append(f.read())
-            # Then load any other .qss files recursively (excluding base.qss to avoid duplication)
-            for root, _dirs, files in os.walk(styles_dir):
-                for fname in files:
+            # Then load window- and component-level QSS in a deterministic order
+            ordered_dirs = [os.path.join(styles_dir, 'windows'), os.path.join(styles_dir, 'components')]
+            for d in ordered_dirs:
+                if not os.path.isdir(d):
+                    continue
+                for fname in sorted(os.listdir(d)):
                     if not fname.lower().endswith('.qss'):
                         continue
-                    if fname == 'base.qss':
-                        continue
-                    path = os.path.join(root, fname)
+                    path = os.path.join(d, fname)
                     try:
                         with open(path, 'r', encoding='utf-8') as f:
                             buf.append(f.read())
                     except Exception:
-                        # Skip unreadable style files
                         continue
             if buf:
                 app.setStyleSheet('\n\n'.join(buf))
