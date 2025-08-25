@@ -1,0 +1,25 @@
+# Theme variable definitions (KEY=VALUE). Keys are referenced as $KEY in QSS files.
+# Edit values here to change the theme globally.
+
+PRIMARY=#2a6fdb
+PRIMARY_DARK=#1b59c3
+PRIMARY_HOVER=#3b83f0
+PRIMARY_PRESSED=#1d4fb3
+BG0=#0f1724
+BG1=#16324f
+TEXT=#e6eef8
+TITLE=#ffffff
+CARD_BG=rgba(255,255,255,0.04)
+ACCENT=#ff6b6b
+ACCENT_HOVER=#ff7f7f
+COMBO_BG=rgba(255,255,255,0.03)
+COMBO_BORDER=rgba(255,255,255,0.06)
+PLAYER_LIST_BG=rgba(0,0,0,0.06)
+LIST_BORDER=rgba(255,255,255,0.04)
+SELECT_BG=rgba(42,111,219,0.12)
+TOOLTIP_BG=rgba(18,25,38,0.95)
+TOOLTIP_TEXT=#dbeafe
+SCROLL_HANDLE=rgba(255,255,255,0.08)
+PBP_BG=#0f0f12
+PANE_BG=#121629
+TS_BG=#16161f

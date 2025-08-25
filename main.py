@@ -49,8 +49,28 @@ def main():
                             buf.append(f.read())
                     except Exception:
                         continue
-            if buf:
-                app.setStyleSheet('\n\n'.join(buf))
+            qss_text = '\n\n'.join(buf) if buf else ''
+            # Load theme variables and substitute $KEY occurrences
+            vars_path = os.path.join(styles_dir, 'theme_vars.qss')
+            vars_map = {}
+            if os.path.exists(vars_path):
+                try:
+                    with open(vars_path, 'r', encoding='utf-8') as vf:
+                        for line in vf:
+                            line = line.strip()
+                            if not line or line.startswith('#'):
+                                continue
+                            if '=' in line:
+                                k, v = line.split('=', 1)
+                                vars_map[k.strip()] = v.strip()
+                except Exception:
+                    vars_map = {}
+            # simple substitution: replace $KEY with value
+            if vars_map and qss_text:
+                for k, v in vars_map.items():
+                    qss_text = qss_text.replace(f"${k}", v)
+            if qss_text:
+                app.setStyleSheet(qss_text)
         except Exception:
             # Don't block startup if styling fails
             pass

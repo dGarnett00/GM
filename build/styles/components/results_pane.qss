@@ -1,0 +1,16 @@
+/* ResultsPane styles */
+ResultsPane {
+  background: $PANE_BG;
+  color: $COLOR_e6e6e6;
+  border: 1px solid $COLOR_2a2a3b;
+  border-radius: 8px;
+  padding: 8px;
+}
+/* ResultsPane styles */
+ResultsPane {
+  background: $PANE_BG;
+  color: $COLOR_e6e6e6;
+  border: 1px solid $COLOR_2a2a3b;
+  border-radius: 8px;
+  padding: 8px;
+}

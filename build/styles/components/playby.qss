@@ -1,0 +1,18 @@
+/* Play-by-play widget styles */
+#PlayByPlayWidget {
+    background: transparent;
+}
+#PlayByPlayBrowser {
+    background: $PBP_BG;
+    color: $COLOR_e6e6e6;
+    border: 1px solid $COLOR_2b2b2b;
+    padding: 8px;
+}
+.pbp-entry {
+    padding: 6px 8px;
+    margin: 4px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.play-highlight {
+    background: rgba(255,255,255,0.03);
+}

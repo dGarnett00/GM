@@ -1,0 +1,26 @@
+/* Exhibition Manager window styles */
+BasketballSimulatorWindow QLabel#TitleLabel { font-size: 22px; }
+BasketballSimulatorWindow QPushButton {
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+BasketballSimulatorWindow QTextEdit {
+  background: $PANE_BG;
+  color: $COLOR_e6e6e6;
+  border: 1px solid $COLOR_2a2a3b;
+  border-radius: 8px;
+}
+BasketballSimulatorWindow QMenuBar { background: $COLOR_1f2033; color: $COLOR_e6e6e6; }
+BasketballSimulatorWindow QMenuBar::item:selected { background: $COLOR_2b2c44; }
+BasketballSimulatorWindow QMenu { background: $COLOR_1f2033; color: $COLOR_e6e6e6; }
+
+/* Card wrapper styling used across panes */
+QFrame#StartCard, QFrame#ResultsPane, QWidget#RostersWindow, QDialog#PlayerBioDialog {
+  background: qlineargradient(x1:0,y1:0,x2:1,y2:1, stop:0 $COLOR_0f1720, stop:1 $COLOR_0f2430);
+  border: 1px solid rgba(255,255,255,0.04);
+  border-radius: 10px;
+  padding: 10px;
+}
+
+/* Layout glue for two-column area */
+BasketballSimulatorWindow QHBoxLayout { spacing: 12px; }

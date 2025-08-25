@@ -1,0 +1,32 @@
+/* TeamSelector component styles */
+TeamSelector {
+  /* container tweaks if desired */
+}
+TeamSelector > QComboBox#TeamCombo {
+  padding: 6px 10px;
+  border: 1px solid $COLOR_393a4b;
+  border-radius: 6px;
+  background: $TS_BG;
+  color: $COLOR_e6e6e6;
+}
+TeamSelector > QLabel#OvrLabel {
+  margin-top: 6px;
+  color: $COLOR_a0a0a0;
+  font-weight: bold;
+}
+/* TeamSelector component styles */
+TeamSelector {
+  /* container tweaks if desired */
+}
+TeamSelector > QComboBox#TeamCombo {
+  padding: 6px 10px;
+  border: 1px solid $COLOR_393a4b;
+  border-radius: 6px;
+  background: $TS_BG;
+  color: $COLOR_e6e6e6;
+}
+TeamSelector > QLabel#OvrLabel {
+  margin-top: 6px;
+  color: $COLOR_a0a0a0;
+  font-weight: bold;
+}

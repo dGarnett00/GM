@@ -1,0 +1,4 @@
+/* Shared menu styles */
+QMenuBar { background: $COLOR_1f2033; color: $COLOR_e6e6e6; }
+QMenuBar::item:selected { background: $COLOR_2b2c44; }
+QMenu { background: $COLOR_1f2033; color: $COLOR_e6e6e6; }

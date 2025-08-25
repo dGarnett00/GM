@@ -1,0 +1,5 @@
+/* Start menu specific styles */
+StartMenuWindow QPushButton[accent="true"] {
+  background: $COLOR_e45858;
+  color: $COLOR_fffffe;
+}

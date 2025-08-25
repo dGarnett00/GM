@@ -1,0 +1,22 @@
+/* Rosters window styles */
+RostersWindow {
+  background: $COLOR_232946;
+  color: $COLOR_fffffe;
+}
+RostersWindow QLabel#TitleLabel {
+  font-size: 20px;
+  letter-spacing: 0.5px;
+}
+RostersWindow QComboBox#TeamCombo {
+  padding: 6px 10px;
+  border: 1px solid $COLOR_eebbc3;
+  border-radius: 8px;
+  background: $COLOR_eebbc3;
+  color: $COLOR_232946;
+}
+RostersWindow QListWidget#PlayerList {
+  background: $PANE_BG;
+  color: $COLOR_fffffe;
+  border-radius: 8px;
+  padding: 10px;
+}

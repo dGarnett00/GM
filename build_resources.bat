@@ -9,6 +9,11 @@ IF NOT EXIST "%PYRCC%" (
 )
 :FOUND
 echo Using %PYRCC%
+REM Optional: run QSS preprocessor to generate processed QSS under build/styles
+IF "%1"=="--preprocess" (
+  echo Running QSS preprocessor (apply mode)...
+  python tools\qss_preprocess.py --apply --outdir build\styles
+)
 %PYRCC% -o gui\resources\rc_icons.py gui\resources\icons.qrc
 %PYRCC% -o gui\resources\rc_skill_icons.py gui\resources\skill_icons.qrc
 echo Done.

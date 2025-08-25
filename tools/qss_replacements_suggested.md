@@ -1,0 +1,114 @@
+# Suggested QSS variable replacements
+
+Replace these hex values with variables in `gui/styles/theme_vars.qss` and use $KEY in QSS.
+
+- #0f0f12 -> PBP_BG
+  - gui\styles\components\play_by_play.qss:6: background: #0f0f12;
+  - gui\styles\components\playby.qss:6: background: #0f0f12;
+  - gui\styles\theme_vars.qss:23: PBP_BG=#0f0f12
+- #0f1720 -> COLOR_0f1720
+  - gui\styles\windows\main_window.qss:19: background: qlineargradient(x1:0,y1:0,x2:1,y2:1, stop:0 #0f1720, stop:1 #0f2430);
+- #0f1724 -> BG0
+  - gui\styles\base.qss:8: background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #0f1724, stop:1 #16324f);
+  - gui\styles\base.qss:93: background: #0f1724;
+  - gui\styles\theme_vars.qss:8: BG0=#0f1724
+- #0f2430 -> COLOR_0f2430
+  - gui\styles\windows\main_window.qss:19: background: qlineargradient(x1:0,y1:0,x2:1,y2:1, stop:0 #0f1720, stop:1 #0f2430);
+- #121629 -> PANE_BG
+  - gui\styles\components\results_pane.qss:3: background: #121629;
+  - gui\styles\components\results_pane.qss:11: background: #121629;
+  - gui\styles\theme_vars.qss:24: PANE_BG=#121629
+  - gui\styles\windows\main_window.qss:8: background: #121629;
+  - gui\styles\windows\rosters_window.qss:18: background: #121629;
+- #16161f -> TS_BG
+  - gui\styles\components\team_selector.qss:9: background: #16161f;
+  - gui\styles\components\team_selector.qss:25: background: #16161f;
+  - gui\styles\theme_vars.qss:25: TS_BG=#16161f
+- #16324f -> BG1
+  - gui\styles\base.qss:8: background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #0f1724, stop:1 #16324f);
+  - gui\styles\theme_vars.qss:9: BG1=#16324f
+- #163f92 -> COLOR_163f92
+  - gui\styles\base.qss:39: background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #1d4fb3, stop:1 #163f92);
+- #1b59c3 -> PRIMARY_DARK
+  - gui\styles\base.qss:28: background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #2a6fdb, stop:1 #1b59c3);
+  - gui\styles\theme_vars.qss:5: PRIMARY_DARK=#1b59c3
+- #1d4fb3 -> PRIMARY_PRESSED
+  - gui\styles\base.qss:39: background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #1d4fb3, stop:1 #163f92);
+  - gui\styles\theme_vars.qss:7: PRIMARY_PRESSED=#1d4fb3
+- #1f2033 -> COLOR_1f2033
+  - gui\styles\menu.qss:2: QMenuBar { background: #1f2033; color: #e6e6e6; }
+  - gui\styles\menu.qss:4: QMenu { background: #1f2033; color: #e6e6e6; }
+  - gui\styles\windows\main_window.qss:13: BasketballSimulatorWindow QMenuBar { background: #1f2033; color: #e6e6e6; }
+  - gui\styles\windows\main_window.qss:15: BasketballSimulatorWindow QMenu { background: #1f2033; color: #e6e6e6; }
+- #232946 -> COLOR_232946
+  - gui\styles\windows\player_bio.qss:3: background: #232946;
+  - gui\styles\windows\rosters_window.qss:3: background: #232946;
+  - gui\styles\windows\rosters_window.qss:15: color: #232946;
+  - gui\styles\windows\start_menu.qss:6: color: #232946;
+- #2766d6 -> COLOR_2766d6
+  - gui\styles\base.qss:36: background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #3b83f0, stop:1 #2766d6);
+- #2a2a3b -> COLOR_2a2a3b
+  - gui\styles\components\results_pane.qss:5: border: 1px solid #2a2a3b;
+  - gui\styles\components\results_pane.qss:13: border: 1px solid #2a2a3b;
+  - gui\styles\windows\main_window.qss:10: border: 1px solid #2a2a3b;
+- #2a6fdb -> PRIMARY
+  - gui\styles\base.qss:28: background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #2a6fdb, stop:1 #1b59c3);
+  - gui\styles\theme_vars.qss:4: PRIMARY=#2a6fdb
+- #2b2b2b -> COLOR_2b2b2b
+  - gui\styles\components\play_by_play.qss:8: border: 1px solid #2b2b2b;
+  - gui\styles\components\playby.qss:8: border: 1px solid #2b2b2b;
+- #2b2c44 -> COLOR_2b2c44
+  - gui\styles\menu.qss:3: QMenuBar::item:selected { background: #2b2c44; }
+  - gui\styles\windows\main_window.qss:14: BasketballSimulatorWindow QMenuBar::item:selected { background: #2b2c44; }
+- #393a4b -> COLOR_393a4b
+  - gui\styles\components\team_selector.qss:7: border: 1px solid #393a4b;
+  - gui\styles\components\team_selector.qss:23: border: 1px solid #393a4b;
+- #3b83f0 -> PRIMARY_HOVER
+  - gui\styles\base.qss:36: background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #3b83f0, stop:1 #2766d6);
+  - gui\styles\theme_vars.qss:6: PRIMARY_HOVER=#3b83f0
+- #a0a0a0 -> COLOR_a0a0a0
+  - gui\styles\components\team_selector.qss:14: color: #a0a0a0;
+  - gui\styles\components\team_selector.qss:30: color: #a0a0a0;
+- #dbeafe -> COLOR_dbeafe
+  - gui\styles\base.qss:80: color: #dbeafe;
+  - gui\styles\base.qss:89: color: #dbeafe;
+  - gui\styles\theme_vars.qss:21: TOOLTIP_TEXT=#dbeafe
+- #e04343 -> COLOR_e04343
+  - gui\styles\base.qss:44: background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #ff6b6b, stop:1 #e04343);
+- #e45858 -> COLOR_e45858
+  - gui\styles\widgets\start_menu.qss:3: background: #e45858;
+- #e6e6e6 -> COLOR_e6e6e6
+  - gui\styles\components\play_by_play.qss:7: color: #e6e6e6;
+  - gui\styles\components\playby.qss:7: color: #e6e6e6;
+  - gui\styles\components\results_pane.qss:4: color: #e6e6e6;
+  - gui\styles\components\results_pane.qss:12: color: #e6e6e6;
+  - gui\styles\components\team_selector.qss:10: color: #e6e6e6;
+  - gui\styles\components\team_selector.qss:26: color: #e6e6e6;
+  - gui\styles\menu.qss:2: QMenuBar { background: #1f2033; color: #e6e6e6; }
+  - gui\styles\menu.qss:4: QMenu { background: #1f2033; color: #e6e6e6; }
+  - gui\styles\windows\main_window.qss:9: color: #e6e6e6;
+  - gui\styles\windows\main_window.qss:13: BasketballSimulatorWindow QMenuBar { background: #1f2033; color: #e6e6e6; }
+  - gui\styles\windows\main_window.qss:15: BasketballSimulatorWindow QMenu { background: #1f2033; color: #e6e6e6; }
+- #e6eef8 -> TEXT
+  - gui\styles\base.qss:9: color: #e6eef8;
+  - gui\styles\theme_vars.qss:10: TEXT=#e6eef8
+- #eebbc3 -> COLOR_eebbc3
+  - gui\styles\windows\rosters_window.qss:12: border: 1px solid #eebbc3;
+  - gui\styles\windows\rosters_window.qss:14: background: #eebbc3;
+  - gui\styles\windows\start_menu.qss:5: background: #eebbc3;
+- #ff6b6b -> ACCENT
+  - gui\styles\base.qss:44: background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #ff6b6b, stop:1 #e04343);
+  - gui\styles\theme_vars.qss:13: ACCENT=#ff6b6b
+- #ff7f7f -> COLOR_ff7f7f
+  - gui\styles\base.qss:46: QPushButton[accent="true"]:hover { background: #ff7f7f; }
+  - gui\styles\theme_vars.qss:14: ACCENT_HOVER=#ff7f7f
+- #fffffe -> COLOR_fffffe
+  - gui\styles\widgets\start_menu.qss:4: color: #fffffe;
+  - gui\styles\windows\player_bio.qss:4: color: #fffffe;
+  - gui\styles\windows\rosters_window.qss:4: color: #fffffe;
+  - gui\styles\windows\rosters_window.qss:19: color: #fffffe;
+- #ffffff -> TITLE
+  - gui\styles\base.qss:14: color: #ffffff;
+  - gui\styles\base.qss:71: color: #ffffff;
+  - gui\styles\theme_vars.qss:11: TITLE=#ffffff
+
